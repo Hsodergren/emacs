@@ -16,7 +16,7 @@
     ("47ec21abaa6642fefec1b7ace282221574c2dd7ef7715c099af5629926eb4fd7" default)))
  '(package-selected-packages
    (quote
-    (gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil))))
+    (company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -28,6 +28,9 @@
 (global-linum-mode t)
 (package-install 'gruber-darker-theme)
 (load-theme 'gruber-darker)
+(setq tab-width 4)
+(setq inhibit-splash-screen t
+      inhibit-startup-screen t)
 
 (when (not (package-installed-p 'use-package))
   (package-refresh-contents)
@@ -36,6 +39,9 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 (setq load-prefer-newer t)
+
+
+(global-hl-line-mode)
 
 (use-package auto-compile
   :config
@@ -106,9 +112,21 @@
 
 ;; PYTHON
 (use-package python-mode)
+(use-package company-jedi)
+(defun my/python-mode-hook ()
+  (add-to-list 'company-backends 'company-jedi))
 
-(setq tab-width 4)
-(setq inhibit-splash-screen t
-      inhibit-startup-screen t)
+(add-hook 'python-mode-hook 'my/python-mode-hook)
 
-(global-hl-line-mode)
+;; GO
+(use-package company-go)
+(use-package go-mode)
+(add-hook 'before-save-hook 'gofmt-before-save)
+(add-hook 'go-mode-hook (lambda()
+			  (setq indent-tabs-mode 1)
+			  (setq tab-width 4)))
+;;(use-package company-mode-go)
+(add-hook 'go-mode-hook 'company-mode)
+(add-hook 'go-mode-hook (lambda () (set (make-local-variable 'company-backends) '(company-go)) (company-mode)))
+
+
