@@ -14,9 +14,10 @@
  '(custom-safe-themes
    (quote
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "47ec21abaa6642fefec1b7ace282221574c2dd7ef7715c099af5629926eb4fd7" default)))
+ '(flycheck-display-errors-delay 0.0)
  '(package-selected-packages
    (quote
-    (company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil))))
+    (flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -74,7 +75,6 @@
 (define-key evil-normal-state-map "L" 'evil-next-buffer)
 (define-key evil-normal-state-map "H" 'evil-prev-buffer)
 
-
 (use-package company)
 (add-hook 'after-init-hook 'global-company-mode)
 (global-set-key (kbd "M-/") 'company-complete-common)
@@ -102,15 +102,27 @@
 (use-package helm
   :config
   (helm-mode 1))
+(use-package helm-ls-git)
+;(setq help-mode-fuzzy-match t)
+;(setq helm-completion-in-region-fuzzy-match t)
+(setq helm-grep-ag-command "rg --color=always --colors 'match:fg:red' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s")
+ (setq helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:red'" "--colors 'match:bg:yellow'"))
 
+;(add-to-list 'load-path "~/.emacs.d/emacs-application-framework")
+;(require 'eaf)
 
 ;; RUST
+(use-package flycheck-rust)
+(use-package toml-mode)
+(use-package racer)
 (use-package rust-mode)
 (setq rust-format-on-save t)
-(use-package racer)
 (add-hook 'rust-mode-hook #'racer-mode)
-(add-hook 'racer-mode-hook #'eldoc-mode)
-(add-hook 'racer-mode-hook #'company-mode)
+(add-hook 'rust-mode-hook #'eldoc-mode)
+(add-hook 'rust-mode-hook #'company-mode)
+(add-hook 'rust-mode-hook #'flycheck-mode)
+(with-eval-after-load 'rust-mode
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 ;; PYTHON
 (use-package python-mode)
@@ -127,8 +139,8 @@
 (add-hook 'go-mode-hook (lambda()
 			  (setq indent-tabs-mode 1)
 			  (setq tab-width 4)))
-;;(use-package company-mode-go)
-(add-hook 'go-mode-hook 'company-mode)
-(add-hook 'go-mode-hook (lambda () (set (make-local-variable 'company-backends) '(company-go)) (company-mode)))
 
+(add-hook 'go-mode-hook 'company-mode)
+(add-hook 'go-mode-hook (lambda ()
+			  (set (make-local-variable 'company-backends) '(company-go)) (company-mode)))
 
