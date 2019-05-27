@@ -1,6 +1,5 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -18,7 +17,8 @@
  '(flycheck-display-errors-delay 0.0)
  '(package-selected-packages
    (quote
-    (flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil))))
+    (yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+ '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -45,9 +45,12 @@
 
 (global-hl-line-mode)
 
+(use-package fzf)
 (use-package auto-compile
   :config
   (auto-compile-on-load-mode))
+
+(use-package yasnippet)
 
 (use-package evil
   :ensure t
@@ -100,9 +103,12 @@
 (use-package org)
 (use-package smart-mode-line)
 (sml/setup)
+(evil-ex-define-cmd "ls" #'helm-buffer-list)
+(evil-ex-define-cmd "apa" #'helm-buffer-list)
 (use-package helm
   :config
   (helm-mode 1))
+
 (use-package helm-ls-git)
 ;(setq help-mode-fuzzy-match t)
 ;(setq helm-completion-in-region-fuzzy-match t)
@@ -112,6 +118,8 @@
 ;(add-to-list 'load-path "~/.emacs.d/emacs-application-framework")
 ;(require 'eaf)
 
+
+(use-package pdf-tools)
 ;; RUST
 (use-package flycheck-rust)
 (use-package toml-mode)
@@ -120,7 +128,6 @@
 (setq rust-format-on-save t)
 (add-hook 'rust-mode-hook #'racer-mode)
 (add-hook 'rust-mode-hook #'eldoc-mode)
-(add-hook 'rust-mode-hook #'company-mode)
 (add-hook 'rust-mode-hook #'flycheck-mode)
 (with-eval-after-load 'rust-mode
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
@@ -141,7 +148,6 @@
 			  (setq indent-tabs-mode 1)
 			  (setq tab-width 4)))
 
-(add-hook 'go-mode-hook 'company-mode)
 (add-hook 'go-mode-hook (lambda ()
 			  (set (make-local-variable 'company-backends) '(company-go)) (company-mode)))
 
