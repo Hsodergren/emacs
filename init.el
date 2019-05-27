@@ -17,7 +17,7 @@
  '(flycheck-display-errors-delay 0.0)
  '(package-selected-packages
    (quote
-    (yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+    (disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
  '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -27,6 +27,7 @@
  )
 (menu-bar-mode -1)
 (tool-bar-mode -1)
+(scroll-bar-mode -1)
 (global-linum-mode t)
 (package-install 'gruber-darker-theme)
 (load-theme 'gruber-darker)
@@ -42,8 +43,15 @@
 (setq use-package-always-ensure t)
 (setq load-prefer-newer t)
 
-
 (global-hl-line-mode)
+
+; BACKUP FILES
+(setq backup-directory-alist `(("." . "~/.emacs.d/saves")))
+(setq backup-by-copying t)
+
+; DISABLE MOUSE
+(use-package disable-mouse)
+(global-disable-mouse-mode)
 
 (use-package fzf)
 (use-package auto-compile
@@ -70,6 +78,10 @@
 (key-chord-mode 1)
 (setq key-chord-two-keys-delay 0.5)
 
+; bindings
+(global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
+
+; evil mode bindings
 (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
 (key-chord-define evil-normal-state-map ",q" 'evil-delete-buffer)
 (define-key evil-normal-state-map "\C-j" 'evil-window-down)
@@ -87,7 +99,6 @@
   :bind
   ("C-x g" . magit-status)
 
-
   :config
   (use-package evil-magit)
   (use-package with-editor)
@@ -104,7 +115,6 @@
 (use-package org)
 (use-package smart-mode-line)
 (sml/setup)
-(evil-ex-define-cmd "ls" #'helm-buffer-list)
 (evil-ex-define-cmd "apa" #'helm-buffer-list)
 (use-package helm
   :config
