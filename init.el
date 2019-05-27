@@ -87,6 +87,7 @@
   :bind
   ("C-x g" . magit-status)
 
+
   :config
   (use-package evil-magit)
   (use-package with-editor)
