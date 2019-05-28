@@ -115,10 +115,13 @@
 (use-package org)
 (use-package smart-mode-line)
 (sml/setup)
-(evil-ex-define-cmd "apa" #'helm-buffer-list)
+(evil-ex-define-cmd "ls" 'helm-mini)
 (use-package helm
   :config
-  (helm-mode 1))
+  (helm-mode 1)
+  :bind (("M-x" . helm-M-x)
+	 ("C-c C-f" . helm-find-files)
+	 ("C-c C-g" . helm-ls-git-ls)))
 
 (use-package helm-ls-git)
 ;(setq help-mode-fuzzy-match t)
