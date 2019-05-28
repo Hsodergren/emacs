@@ -117,8 +117,8 @@
   :config
   (helm-mode 1)
   :bind (("M-x" . helm-M-x)
-	 ("C-c C-f" . helm-find-files)
-	 ("C-c C-g" . helm-ls-git-ls)))
+	 ("C-x C-f" . helm-find-files)
+	 ("C-x C-g" . helm-ls-git-ls)))
 
 (use-package helm-ls-git)
 ;;(setq help-mode-fuzzy-match t)
