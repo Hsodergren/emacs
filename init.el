@@ -15,7 +15,6 @@
    (quote
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "47ec21abaa6642fefec1b7ace282221574c2dd7ef7715c099af5629926eb4fd7" default)))
  '(flycheck-display-errors-delay 0.0)
- '(global-linum-mode t)
  '(package-selected-packages
    (quote
     (disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
@@ -29,7 +28,6 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(global-linum-mode t)
 (package-install 'gruber-darker-theme)
 (load-theme 'gruber-darker)
 (setq tab-width 4)
@@ -44,7 +42,7 @@
 (setq use-package-always-ensure t)
 (setq load-prefer-newer t)
 
-(global-hl-line-mode)
+(add-hook 'prog-mode-hook 'linum-mode)
 
 ;; BACKUP FILES
 (setq backup-directory-alist `(("." . "~/.emacs.d/saves")))
@@ -67,13 +65,11 @@
   (setq evil-want-C-u-scroll t)
   (setq evil-want-keybinding nil)
   (setq evil-want-integration t)
-
   :config
   (evil-mode 1))
 
 (use-package evil-collection)
 (evil-collection-init)
-
 
 (use-package key-chord)
 (key-chord-mode 1)
@@ -135,6 +131,7 @@
 
 
 (use-package pdf-tools)
+(pdf-tools-install)
 ;; RUST
 (use-package flycheck-rust)
 (use-package toml-mode)
