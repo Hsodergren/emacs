@@ -46,11 +46,11 @@
 
 (global-hl-line-mode)
 
-; BACKUP FILES
+;; BACKUP FILES
 (setq backup-directory-alist `(("." . "~/.emacs.d/saves")))
 (setq backup-by-copying t)
 
-; DISABLE MOUSE
+;; DISABLE MOUSE
 (use-package disable-mouse)
 (global-disable-mouse-mode)
 
@@ -79,10 +79,10 @@
 (key-chord-mode 1)
 (setq key-chord-two-keys-delay 0.5)
 
-; bindings
+;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
-; evil mode bindings
+;; evil mode bindings
 (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
 (key-chord-define evil-normal-state-map ",q" 'evil-delete-buffer)
 (define-key evil-normal-state-map "\C-j" 'evil-window-down)
@@ -125,13 +125,13 @@
 	 ("C-c C-g" . helm-ls-git-ls)))
 
 (use-package helm-ls-git)
-;(setq help-mode-fuzzy-match t)
-;(setq helm-completion-in-region-fuzzy-match t)
+;;(setq help-mode-fuzzy-match t)
+;;(setq helm-completion-in-region-fuzzy-match t)
 (setq helm-grep-ag-command "rg --color=always --colors 'match:fg:red' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s")
- (setq helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:red'" "--colors 'match:bg:yellow'"))
+(setq helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:red'" "--colors 'match:bg:yellow'"))
 
-;(add-to-list 'load-path "~/.emacs.d/emacs-application-framework")
-;(require 'eaf)
+;;(add-to-list 'load-path "~/.emacs.d/emacs-application-framework")
+;;(require 'eaf)
 
 
 (use-package pdf-tools)

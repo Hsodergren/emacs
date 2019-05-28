@@ -8,8 +8,8 @@
  (magit-dispatch nil)
  (magit-gitignore nil)
  (magit-log
-  ("-n256" "--graph" "--decorate")
   ("-n256" "--graph" "--color" "--decorate")
+  ("-n256" "--graph" "--decorate")
   ("-n256" "-Ghistorysml" "--graph" "--decorate")
   ("-n256" "-Ghistory" "--graph" "--color" "--decorate")
   (("--" "init.el"))
@@ -23,8 +23,7 @@
   (("--" "init.el")
    "--graph"))
  (magit-log:-G "historysml" "history")
- (magit-pull nil
-	     ("--rebase"))
+ (magit-pull nil)
  (magit-push nil)
  (magit-revision-history "master")
  (magit:--author "Henrik Södergren <henrik.sodergren@outlook.com>"))
