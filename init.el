@@ -118,7 +118,8 @@
   (helm-mode 1)
   :bind (("M-x" . helm-M-x)
 	 ("C-x C-f" . helm-find-files)
-	 ("C-x C-g" . helm-ls-git-ls)))
+	 ("C-x C-g" . helm-ls-git-ls)
+	 ("C-x C-r" . helm-recentf)))
 
 (use-package helm-ls-git)
 ;;(setq help-mode-fuzzy-match t)
