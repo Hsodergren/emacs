@@ -28,7 +28,7 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(package-install 'gruber-darker-theme)
+(use-package gruber-darker-theme)
 (load-theme 'gruber-darker)
 (setq tab-width 4)
 (setq inhibit-splash-screen t
@@ -119,6 +119,7 @@
   :bind (("M-x" . helm-M-x)
 	 ("C-x C-f" . helm-find-files)
 	 ("C-x C-g" . helm-ls-git-ls)
+	 ("C-x C-b" . helm-buffers-list)
 	 ("C-x C-r" . helm-recentf)))
 
 (use-package helm-ls-git)
