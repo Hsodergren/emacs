@@ -122,7 +122,7 @@
 	 ("C-x C-b" . helm-buffers-list)
 	 ("C-x C-r" . helm-recentf)))
 
-(use-package helm-ls-git)
+(use-package projectile)
 ;;(setq help-mode-fuzzy-match t)
 ;;(setq helm-completion-in-region-fuzzy-match t)
 (setq helm-grep-ag-command "rg --color=always --colors 'match:fg:red' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s")
