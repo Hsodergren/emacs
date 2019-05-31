@@ -17,7 +17,7 @@
  '(flycheck-display-errors-delay 0.0)
  '(package-selected-packages
    (quote
-    (disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+    (helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
  '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -114,15 +114,26 @@
 (sml/setup)
 (evil-ex-define-cmd "ls" 'helm-mini)
 (use-package helm
+  :init
+  (setq helm-M-x-fuzzy-match t)
   :config
   (helm-mode 1)
   :bind (("M-x" . helm-M-x)
 	 ("C-x C-f" . helm-find-files)
-	 ("C-x C-g" . helm-ls-git-ls)
 	 ("C-x C-b" . helm-buffers-list)
 	 ("C-x C-r" . helm-recentf)))
 
-(use-package projectile)
+(use-package projectile
+  :init
+  (projectile-mode t)
+  (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map))
+
+(use-package helm-projectile
+  :init
+  (helm-projectile-on)
+  :bind
+  (("C-x C-g" . helm-projectile)
+   ("C-x p r" . helm-projectile-recentf)))
 ;;(setq help-mode-fuzzy-match t)
 ;;(setq helm-completion-in-region-fuzzy-match t)
 (setq helm-grep-ag-command "rg --color=always --colors 'match:fg:red' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s")
