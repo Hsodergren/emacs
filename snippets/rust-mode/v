@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: create a vec
+# key: v
+# --
+vec![$1]$0

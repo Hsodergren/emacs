@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: new Vec<> type
+# key: V
+# --
+Vec<$1>$0
