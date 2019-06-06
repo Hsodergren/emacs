@@ -19,7 +19,7 @@
  '(flycheck-display-errors-delay 0.0)
  '(package-selected-packages
    (quote
-    (top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+    (diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
  '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -113,6 +113,11 @@
                                'magit-push-implicitly--desc
                                'magit-push-implicitly ?p t))
   (add-hook 'with-editor-mode-hook 'evil-insert-state))
+
+
+(use-package diff-hl
+  :init
+  (global-diff-hl-mode 1))
 
 (use-package flycheck)
 (use-package eldoc)
