@@ -120,7 +120,9 @@
   (global-diff-hl-mode 1))
 
 (use-package flycheck)
-(use-package eldoc)
+(use-package eldoc
+  :init
+  (global-eldoc-mode))
 (use-package org)
 (use-package smart-mode-line)
 (sml/setup)
@@ -164,7 +166,6 @@
 (use-package rust-mode)
 (setq rust-format-on-save t)
 (add-hook 'rust-mode-hook #'racer-mode)
-(add-hook 'rust-mode-hook #'eldoc-mode)
 (add-hook 'rust-mode-hook #'flycheck-mode)
 (with-eval-after-load 'rust-mode
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
