@@ -85,6 +85,8 @@
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
+(use-package avy)
+
 ;; evil mode bindings
 (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
 (key-chord-define evil-normal-state-map ",q" 'evil-delete-buffer)
@@ -94,6 +96,7 @@
 (define-key evil-normal-state-map "\C-l" 'evil-window-right)
 (define-key evil-normal-state-map "L" 'evil-next-buffer)
 (define-key evil-normal-state-map "H" 'evil-prev-buffer)
+(define-key evil-normal-state-map "f" 'avy-goto-char)
 
 (use-package company)
 (add-hook 'after-init-hook 'global-company-mode)
