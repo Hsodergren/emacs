@@ -19,7 +19,7 @@
  '(flycheck-display-errors-delay 0.0)
  '(package-selected-packages
    (quote
-    (diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+    (go-rename guru-mode go-guru go-eldoc jinja2-mode diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
  '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -184,11 +184,19 @@
 ;; GO
 (use-package company-go)
 (use-package go-mode)
-(add-hook 'before-save-hook 'gofmt-before-save)
-(add-hook 'go-mode-hook (lambda()
-			  (setq indent-tabs-mode 1)
-			  (setq tab-width 4)))
+(use-package go-eldoc)
+(use-package go-rename)
+(use-package go-guru)
 
-(add-hook 'go-mode-hook (lambda ()
-			  (set (make-local-variable 'company-backends) '(company-go)) (company-mode)))
+(defun my/go-mode-hook ()
+  (setq indent-tabs-mode 1)
+  (setq tab-width 4)
+  (load-file "$GOPATH/src/golang/x/tools/cmd/guru/go-guru.el")
+  (add-hook 'before-save-hook 'gofmt-before-save)
+  (set (make-local-variable 'company-backends) '(company-go))
+  (company-mode))
 
+(add-hook 'go-mode-hook 'my/go-mode-hook)
+
+
+(use-package jinja2-mode)
