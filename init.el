@@ -92,8 +92,8 @@
 (use-package avy)
 
 ;; evil mode bindings
-(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-(key-chord-define evil-normal-state-map ",q" 'evil-delete-buffer)
+(define-key evil-insert-state-map "jk" 'evil-normal-state)
+(define-key evil-normal-state-map ",q" 'evil-delete-buffer)
 (define-key evil-normal-state-map "\C-j" 'evil-window-down)
 (define-key evil-normal-state-map "\C-k" 'evil-window-up)
 (define-key evil-normal-state-map "\C-h" 'evil-window-left)
