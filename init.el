@@ -13,20 +13,22 @@
  '(blink-cursor-mode nil)
  '(custom-safe-themes
    (quote
-    ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "47ec21abaa6642fefec1b7ace282221574c2dd7ef7715c099af5629926eb4fd7" default)))
+    ("3860a842e0bf585df9e5785e06d600a86e8b605e5cc0b74320dfe667bcbe816c" "79485bab8bb220562d4acd003e4b6f1c9005af41e91f81b7a0e89b7e3a301203" "acfac6b14461a344f97fad30e2362c26a3fe56a9f095653832d8fc029cb9d05c" "e396098fd5bef4f0dd6cedd01ea48df1ecb0554d8be0d8a924fb1d926f02f90f" "33af2d5cb040182b798c3a4ee6d16210e700a2fabaa409231e1c4a003cafd1c2" "2540689fd0bc5d74c4682764ff6c94057ba8061a98be5dd21116bf7bf301acfb" "24fc62afe2e5f0609e436aa2427b396adf9a958a8fa660edbaab5fb13c08aae6" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" "d8dc153c58354d612b2576fea87fe676a3a5d43bcc71170c62ddde4a1ad9e1fb" "49113d0c7d23c1f752409d0d4d34d3f5af4f1692f5dd6d1b1b3c805ca2d606aa" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "47ec21abaa6642fefec1b7ace282221574c2dd7ef7715c099af5629926eb4fd7" default)))
  '(dired-dwim-target t)
  '(dired-use-ls-dired t)
  '(flycheck-display-errors-delay 0.0)
+ '(helm-completion-style (quote emacs))
  '(package-selected-packages
    (quote
-    (go-rename guru-mode go-guru go-eldoc jinja2-mode diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer python-mode rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+    (anaconda-mode company-anaconda ess-R-data-view ess-view ess tuareg eglot heaven-and-hell grandshell-theme gotham-theme flucui-themes faff-theme afternoon-theme arc-dark-theme abyss-theme jsonrpc proof-general merlin-eldoc utop dune flymake-cursor elpy go-rename guru-mode go-guru go-eldoc jinja2-mode diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
  '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(linum ((t (:foreground "tan4")))))
+ '(linum ((t (:foreground "tan4"))))
+ '(merlin-eldoc-occurrences-face ((t (:background "gray18")))))
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
@@ -56,6 +58,8 @@
 ;; DISABLE MOUSE
 (use-package disable-mouse)
 (global-disable-mouse-mode)
+
+(use-package flymake-cursor)
 
 (use-package fzf)
 (use-package auto-compile
@@ -111,11 +115,7 @@
   (use-package with-editor)
   (setq magit-push-always-verify nil)
   (setq git-commit-summary-max-length 50)
-  (with-eval-after-load 'magit-remote
-    (magit-define-popup-action 'magit-push-popup ?P
-                               'magit-push-implicitly--desc
-                               'magit-push-implicitly ?p t))
-  (add-hook 'with-editor-mode-hook 'evil-insert-state))
+  )
 
 
 (use-package diff-hl
@@ -162,6 +162,8 @@
 
 (use-package pdf-tools)
 (pdf-tools-install)
+;; LISP
+(use-package cl)
 ;; RUST
 (use-package flycheck-rust)
 (use-package toml-mode)
@@ -174,12 +176,11 @@
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 ;; PYTHON
-(use-package python-mode)
-(use-package company-jedi)
-(defun my/python-mode-hook ()
-  (add-to-list 'company-backends 'company-jedi))
+(use-package anaconda-mode)
+(use-package company-anaconda)
 
-(add-hook 'python-mode-hook 'my/python-mode-hook)
+(eval-after-load "company" '(add-to-list 'company-backends 'company-anaconda))
+(add-hook 'python-mode-hook 'anaconda-mode)
 
 ;; GO
 (use-package company-go)
@@ -194,9 +195,47 @@
   (load-file "$GOPATH/src/golang/x/tools/cmd/guru/go-guru.el")
   (add-hook 'before-save-hook 'gofmt-before-save)
   (set (make-local-variable 'company-backends) '(company-go))
-  (company-mode))
+  (company-mode)
+  (go-eldoc-setup)
+  )
 
 (add-hook 'go-mode-hook 'my/go-mode-hook)
 
 
 (use-package jinja2-mode)
+;; OCAML
+(use-package tuareg)
+(use-package dune)
+(use-package merlin)
+(use-package merlin-eldoc)
+(use-package utop)
+(use-package proof-general)
+
+(setq auto-mode-alist
+      (append '(("\\.ml[ily]?$" . tuareg-mode)
+                ("\\.topml$" . tuareg-mode))
+              auto-mode-alist))
+(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+(add-hook 'tuareg-mode-hook 'utop-minor-mode)
+(add-hook 'tuareg-mode-hook 'merlin-mode)
+(add-hook 'tuareg-mode-hook 'company-mode)
+(add-hook 'merlin-mode 'merlin-eldoc-setup)
+(setq merlin-error-after-save t)
+
+;; -- merlin setup ---------------------------------------
+
+(setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
+(add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+;; So you can do it on a mac, where `C-<up>` and `C-<down>` are used
+;; by spaces.
+(define-key merlin-mode-map
+  (kbd "C-c <up>") 'merlin-type-enclosing-go-up)
+(define-key merlin-mode-map
+  (kbd "C-c <down>") 'merlin-type-enclosing-go-down)
+(set-face-background 'merlin-type-face "#88FF44")
+
+;; -- enable auto-complete -------------------------------
+;; Not required, but useful along with merlin-mode
+
+(setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
+(load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
