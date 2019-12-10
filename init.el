@@ -100,7 +100,7 @@
 (define-key evil-normal-state-map "\C-l" 'evil-window-right)
 (define-key evil-normal-state-map "L" 'evil-next-buffer)
 (define-key evil-normal-state-map "H" 'evil-prev-buffer)
-(define-key evil-normal-state-map "f" 'avy-goto-char)
+(define-key evil-normal-state-map "f" 'avy-goto-word-1)
 
 (use-package company)
 (add-hook 'after-init-hook 'global-company-mode)
