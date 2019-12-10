@@ -115,6 +115,7 @@
   (use-package with-editor)
   (setq magit-push-always-verify nil)
   (setq git-commit-summary-max-length 50)
+  (setq magit-diff-refine-hunk t)
   )
 
 
