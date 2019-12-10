@@ -20,7 +20,7 @@
  '(helm-completion-style (quote emacs))
  '(package-selected-packages
    (quote
-    (anaconda-mode company-anaconda ess-R-data-view ess-view ess tuareg eglot heaven-and-hell grandshell-theme gotham-theme flucui-themes faff-theme afternoon-theme arc-dark-theme abyss-theme jsonrpc proof-general merlin-eldoc utop dune flymake-cursor elpy go-rename guru-mode go-guru go-eldoc jinja2-mode diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
+    (merlin anaconda-mode company-anaconda ess-R-data-view ess-view ess tuareg eglot heaven-and-hell grandshell-theme gotham-theme flucui-themes faff-theme afternoon-theme arc-dark-theme abyss-theme jsonrpc proof-general merlin-eldoc utop dune flymake-cursor elpy go-rename guru-mode go-guru go-eldoc jinja2-mode diff-hl git-gutter top-mode helm-projectile projectile disable-mouse yasnippet fzf pdf-tools flycheck-rust toml-mode helm-ls-git helm-find helm-find-files company-jedi company-go go-mode company-mode-go gruber-darker-theme evil-collection helm help racer rust-mode flycheck evil-magit magit company auto-compile use-package key-chord evil)))
  '(ring-bell-function (quote ignore)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -181,6 +181,7 @@
 
 (eval-after-load "company" '(add-to-list 'company-backends 'company-anaconda))
 (add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 
 ;; GO
 (use-package company-go)
