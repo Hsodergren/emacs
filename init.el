@@ -221,7 +221,7 @@
 (add-hook 'tuareg-mode-hook 'utop-minor-mode)
 (add-hook 'tuareg-mode-hook 'merlin-mode)
 (add-hook 'tuareg-mode-hook 'company-mode)
-(add-hook 'merlin-mode 'merlin-eldoc-setup)
+(add-hook 'merlin-mode-hook 'merlin-eldoc-setup)
 (setq merlin-error-after-save t)
 
 ;; -- merlin setup ---------------------------------------
