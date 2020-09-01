@@ -247,7 +247,10 @@
 
 (use-package jinja2-mode)
 ;; OCAML
-(use-package tuareg)
+(use-package tuareg
+  :bind (:map evil-normal-state-map
+	      ("K" . 'merlin-document)))
+
 (use-package dune)
 (use-package merlin)
 (use-package merlin-eldoc)
