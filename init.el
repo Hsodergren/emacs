@@ -176,9 +176,9 @@
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
-;; (use-package smart-mode-line
-;;   :config
-;;   (sml/setup))
+(use-package smart-mode-line
+  :config
+  (sml/setup))
 
 (use-package projectile
   :init
