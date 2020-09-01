@@ -113,14 +113,14 @@
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
   (evil-ex-define-cmd "ls" 'helm-mini)
   :bind (:map evil-normal-state-map
-			  (",q" . 'kill-current-buffer)
-			  ("C-j" . 'evil-window-down)
-			  ("C-k" . 'evil-window-up)
-			  ("C-h" . 'evil-window-left)
-			  ("C-l" . 'evil-window-right)
-			  ("L" . 'evil-next-buffer)
-			  ("H" . 'evil-prev-buffer)
-			  ("C-c C-c" .'compile)))
+	      (",q" . 'kill-current-buffer)
+	      ("C-j" . 'evil-window-down)
+	      ("C-k" . 'evil-window-up)
+	      ("C-h" . 'evil-window-left)
+	      ("C-l" . 'evil-window-right)
+	      ("L" . 'evil-next-buffer)
+	      ("H" . 'evil-prev-buffer)
+	      ("C-c C-c" .'compile)))
 
 (use-package evil-collection
   :config
