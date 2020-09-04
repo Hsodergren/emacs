@@ -28,7 +28,8 @@
  '(ring-bell-function 'ignore)
  '(scroll-bar-mode nil)
  '(tab-width 4)
- '(tool-bar-mode nil))
+ '(tool-bar-mode nil)
+ '(use-package-always-ensure t))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -36,4 +37,5 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:height 100 :foundry "ADBO" :family "Source Code Pro"))))
+ '(linum ((t (:foreground "chocolate"))))
  '(merlin-type-face ((t (:inherit caml-types-expr-face :background "dim gray")))))

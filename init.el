@@ -1,12 +1,13 @@
+(defun emacs-dir (file)
+  (concat user-emacs-directory file))
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
-(setq custom-file "~/.emacs.d/settings.el")
+(setq custom-file (emacs-dir "settings.el"))
 (load custom-file)
-
-(setq use-package-always-ensure t)
-(setq load-prefer-newer t)
+(defun package--save-selected-packages (&rest opt) nil)
 
 (add-hook `prog-mode-hook (lambda ()
 				(whitespace-cleanup)
@@ -19,10 +20,16 @@
 				(define-key blackbox-mode-map (kbd "l") 'bb-right)
 				(define-key blackbox-mode-map (kbd "r") 'blackbox)))
 
-(use-package paredit)
+(use-package csv-mode)
+(use-package json-mode)
+
+(use-package paredit
+  :hook ((lisp-mode emacs-lisp-mode) . paredit-mode)
+  :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
+  :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
 
 ;; BACKUP FILES
-(setq backup-directory-alist `(("." . "~/.emacs.d/saves")))
+(setq backup-directory-alist `(("." . ,(emacs-dir "saves"))))
 (setq backup-by-copying t)
 
 (when (not (package-installed-p 'use-package))
@@ -52,7 +59,6 @@
 
 (use-package flymake-cursor)
 
-(use-package fzf)
 (use-package auto-compile
   :config
   (auto-compile-on-load-mode))
@@ -97,9 +103,9 @@
   :config
   (helm-mode 1)
   :bind (("M-x" . helm-M-x)
-	 ("C-x C-f" . helm-find-files)
-	 ("C-x C-b" . helm-buffers-list)
-	 ("C-x C-r" . helm-recentf)))
+		 ("C-x C-f" . helm-find-files)
+		 ("C-x C-b" . helm-buffers-list)
+		 ("C-x C-r" . helm-recentf)))
 
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
@@ -150,8 +156,6 @@
   (projectile-mode t)
   (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map))
 
-(use-package smartparens)
-
 (use-package helm-projectile
   :init
   (helm-projectile-on)
@@ -165,9 +169,6 @@
 
 ;;(add-to-list 'load-path "~/.emacs.d/emacs-application-framework")
 ;;(require 'eaf)
-
-;; DIRED
-(setq dired-listing-switches "-alh")
 
 (use-package pdf-tools
   :config
@@ -210,11 +211,10 @@
 (add-hook 'go-mode-hook 'my/go-mode-hook)
 
 
-(use-package jinja2-mode)
 ;; OCAML
 (use-package tuareg
-  :bind (:map evil-normal-state-map
-		  ("K" . 'merlin-document)))
+  :bind
+  ("K" . 'merlin-document))
 
 (use-package dune)
 (use-package merlin)
@@ -275,6 +275,5 @@
 	  (cons '("\\.m$" . octave-mode) auto-mode-alist))
 (defun my/octave-hook ()
   (define-key evil-normal-state-map (kbd "C-return") 'octave-send-line)
-  (define-key evil-insert-state-map (kbd "C-return") 'octave-send-line)
-  )
+  (define-key evil-insert-state-map (kbd "C-return") 'octave-send-line))
 (add-hook 'octave-mode-hook 'my/octave-hook)
