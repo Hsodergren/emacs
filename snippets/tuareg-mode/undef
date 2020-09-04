@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: undef
+# key: undef
+# --
+
+let $1 = failwith "undefined" $0
