@@ -5,6 +5,8 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
+(define-key global-map (kbd "C-x C-c") (lambda () (interactive) (message "QUIT disabled, use ':q'")))
+
 (setq custom-file (emacs-dir "settings.el"))
 (load custom-file)
 (defun package--save-selected-packages (&rest opt) nil)
@@ -212,9 +214,7 @@
 
 
 ;; OCAML
-(use-package tuareg
-  :bind
-  ("K" . 'merlin-document))
+(use-package tuareg)
 
 (use-package dune)
 (use-package merlin)
@@ -224,15 +224,17 @@
 
 (setq auto-mode-alist
 	  (append '(("\\.ml[ily]?$" . tuareg-mode)
-		("\\.topml$" . tuareg-mode)
-		("\\.atd$" . tuareg-mode))
-		  auto-mode-alist))
+				("\\.topml$" . tuareg-mode)
+				("\\.atd$" . tuareg-mode))
+			  auto-mode-alist))
 (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
 (add-hook 'tuareg-mode-hook 'utop-minor-mode)
-(add-hook 'tuareg-mode-hook 'merlin-mode)
-(add-hook 'tuareg-mode-hook 'company-mode)
+(add-hook 'tuareg-mode-hook 'merlin-mode t)
+(add-hook 'tuareg-mode-hook 'company-mode t)
 (add-hook 'merlin-mode-hook 'merlin-eldoc-setup)
 (setq merlin-error-after-save t)
+;; :bind (:map tuareg-mode-map ("K" . merlin-document)))
+
 
 ;; -- merlin setup ---------------------------------------
 
@@ -244,11 +246,8 @@
   (kbd "C-c <up>") 'merlin-type-enclosing-go-up)
 (define-key merlin-mode-map
   (kbd "C-c <down>") 'merlin-type-enclosing-go-down)
-(set-face-background 'merlin-type-face "#88FF44")
+(define-key merlin-mode-map (kbd "K") 'merlin-document)
 
-;; -- enable auto-complete -------------------------------
-;; Not required, but useful along with merlin-mode
-(setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
 (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
 
 ;; DART
