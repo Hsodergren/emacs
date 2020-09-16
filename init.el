@@ -1,5 +1,15 @@
+;; funcs
+(load-file "funcs.el")
 (defun emacs-dir (file)
   (concat user-emacs-directory file))
+
+(defun dark-theme ()
+  (interactive)
+  (enable-themes (list 'gruber-darker 'smart-mode-line-dark) t))
+
+(defun light-theme ()
+  (interactive)
+  (disable-all-themes))
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
@@ -40,9 +50,16 @@
 
 (require 'use-package-ensure)
 
+;; themes
 (use-package gruber-darker-theme
   :defer t
   :init (load-theme 'gruber-darker t))
+
+(use-package smart-mode-line
+  :config
+  (sml/setup))
+
+(dark-theme)
 
 (add-hook 'prog-mode-hook 'linum-mode)
 
@@ -50,6 +67,8 @@
 (use-package disable-mouse
   :init
   (global-disable-mouse-mode))
+
+(use-package rainbow-mode)
 
 (use-package fancy-battery
   :init
@@ -149,9 +168,6 @@
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
-(use-package smart-mode-line
-  :config
-  (sml/setup))
 
 (use-package projectile
   :init
