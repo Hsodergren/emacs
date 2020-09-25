@@ -107,6 +107,8 @@
   :bind (:map evil-normal-state-map
 		  (",q" . 'kill-current-buffer)
 		  ("C-j" . 'evil-window-down)
+		  ("j" . 'my-next-line)
+		  ("k" . 'my-prev-line)
 		  ("C-k" . 'evil-window-up)
 		  ("C-h" . 'evil-window-left)
 		  ("C-l" . 'evil-window-right)
