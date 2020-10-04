@@ -1,0 +1,3 @@
+[submodule "lib/gruber-darker-theme"]
+	path = lib/gruber-darker-theme
+	url = https://github.com/Hsodergren/gruber-darker-theme.git
