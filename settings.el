@@ -23,7 +23,7 @@
  '(load-prefer-newer t)
  '(menu-bar-mode nil)
  '(org-agenda-files
-   '("~/programming/coursera/machine_learning_stanford/machine_learning.org"))
+   '("~/org/"))
  '(org-fontify-done-headline t)
  '(ring-bell-function 'ignore)
  '(scroll-bar-mode nil)
@@ -37,5 +37,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:height 100 :foundry "ADBO" :family "Source Code Pro"))))
+ '(cursor ((((background light)) (:background "ForestGreen"))))
  '(linum ((t (:foreground "chocolate"))))
- '(merlin-type-face ((t (:inherit caml-types-expr-face :background "dim gray")))))
+ '(merlin-type-face ((((background dark)) (:inherit caml-types-expr-face :background "#333"))
+					 (((background light)) (:inherit caml-types-expr-face :background "#cff"))))
+ '(region ((((background light)) (:extend t :background "beige" :distant-foreground "black"))))
+ '(show-paren-mismatch ((t (:inherit caml-types-expr-face :background "#f33" :foreground "white")))))

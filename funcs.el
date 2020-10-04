@@ -1,4 +1,3 @@
-
 ;; themes
 (defun disable-all-themes ()
   (mapc 'disable-theme custom-enabled-themes))
@@ -9,7 +8,7 @@
   (mapc 'enable-theme themes))
 
 ;; line
-(defvar my-end-screen-buffer 10)
+(defvar my-end-screen-buffer 5)
 
 (defun my-next-line ()
   (interactive)

@@ -1,8 +1,8 @@
 ;; funcs
-(load-file "funcs.el")
 (defun emacs-dir (file)
   (concat user-emacs-directory file))
 
+(load-file (emacs-dir "funcs.el"))
 (defun dark-theme ()
   (interactive)
   (enable-themes (list 'gruber-darker 'smart-mode-line-dark) t))
