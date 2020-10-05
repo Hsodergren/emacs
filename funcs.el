@@ -5,7 +5,7 @@
 (defun enable-themes (themes &optional only)
   (when only
 	(disable-all-themes))
-  (mapc 'enable-theme themes))
+  (mapc 'load-theme themes))
 
 ;; line
 (defvar my-end-screen-buffer 5)

@@ -59,8 +59,6 @@
   :config
   (sml/setup))
 
-(dark-theme)
-
 (add-hook 'prog-mode-hook 'linum-mode)
 
 ;; DISABLE MOUSE
@@ -294,3 +292,5 @@
   (define-key evil-normal-state-map (kbd "C-return") 'octave-send-line)
   (define-key evil-insert-state-map (kbd "C-return") 'octave-send-line))
 (add-hook 'octave-mode-hook 'my/octave-hook)
+
+(load-file (emacs-dir "post.el"))
