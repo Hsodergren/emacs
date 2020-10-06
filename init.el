@@ -4,6 +4,9 @@
 
 (load-file (emacs-dir "funcs.el"))
 
+(add-hook 'after-init-hook (lambda ()
+							 (time-sensitive-theme)))
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
@@ -45,8 +48,7 @@
 
 ;; themes
 (use-package gruber-darker-theme
-  :defer t
-  :init (load-theme 'gruber-darker t))
+  :ensure nil)
 
 (use-package smart-mode-line
   :config
