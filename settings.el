@@ -9,7 +9,7 @@
    ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
  '(blink-cursor-mode nil)
  '(custom-safe-themes
-   '("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "dcea7310d9d7c169f6343663ff427c3249ef84c21d0179a140183c28378e96ca" "5f824cddac6d892099a91c3f612fcf1b09bb6c322923d779216ab2094375c5ee" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e"))
+   '("8dcc1b5030f5da3326c9df093c4a6ed006221ffa093e3b328f5037abc05d2b65" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "dcea7310d9d7c169f6343663ff427c3249ef84c21d0179a140183c28378e96ca" "5f824cddac6d892099a91c3f612fcf1b09bb6c322923d779216ab2094375c5ee" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e"))
  '(dired-dwim-target t)
  '(dired-use-ls-dired t)
  '(disable-mouse-global-mode t nil (disable-mouse))

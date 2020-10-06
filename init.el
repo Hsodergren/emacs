@@ -48,7 +48,9 @@
 
 ;; themes
 (use-package gruber-darker-theme
-  :ensure nil)
+  :ensure nil
+  :init
+  (add-to-list 'load-path (emacs-dir "lib/gruber-darker-theme")))
 
 (use-package smart-mode-line
   :config
