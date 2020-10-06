@@ -7,6 +7,21 @@
 	(disable-all-themes))
   (mapc 'load-theme themes))
 
+(defun dark-theme ()
+  (interactive)
+  (enable-themes (list 'gruber-darker 'smart-mode-line-dark) t))
+
+(defun light-theme ()
+  (interactive)
+  (disable-all-themes))
+
+(defun time-sensitive-theme ()
+  (interactive)
+  (let ((hour (caddr (decode-time (current-time)))))
+	(if (< 9 hour 17)
+		(light-theme)
+	  (dark-theme))))
+
 ;; line
 (defvar my-end-screen-buffer 5)
 

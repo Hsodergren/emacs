@@ -3,13 +3,6 @@
   (concat user-emacs-directory file))
 
 (load-file (emacs-dir "funcs.el"))
-(defun dark-theme ()
-  (interactive)
-  (enable-themes (list 'gruber-darker 'smart-mode-line-dark) t))
-
-(defun light-theme ()
-  (interactive)
-  (disable-all-themes))
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
