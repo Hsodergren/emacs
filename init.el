@@ -6,7 +6,7 @@
 (load-file (emacs-dir "funcs.el"))
 
 (add-hook 'after-init-hook (lambda ()
-							 (time-sensitive-theme)))
+                             (time-sensitive-theme)))
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
@@ -20,15 +20,15 @@
 
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook `prog-mode-hook (lambda ()
-				(whitespace-cleanup)
-				(show-paren-mode)))
+                            (whitespace-cleanup)
+                            (show-paren-mode)))
 
 (add-hook `blackbox-mode-hook (lambda ()
-				(define-key blackbox-mode-map (kbd "j") 'bb-down)
-				(define-key blackbox-mode-map (kbd "k") 'bb-up)
-				(define-key blackbox-mode-map (kbd "h") 'bb-left)
-				(define-key blackbox-mode-map (kbd "l") 'bb-right)
-				(define-key blackbox-mode-map (kbd "r") 'blackbox)))
+                (define-key blackbox-mode-map (kbd "j") 'bb-down)
+                (define-key blackbox-mode-map (kbd "k") 'bb-up)
+                (define-key blackbox-mode-map (kbd "h") 'bb-left)
+                (define-key blackbox-mode-map (kbd "l") 'bb-right)
+                (define-key blackbox-mode-map (kbd "r") 'blackbox)))
 
 (use-package csv-mode)
 (use-package json-mode)
@@ -104,16 +104,16 @@
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
   (evil-ex-define-cmd "ls" 'helm-mini)
   :bind (:map evil-normal-state-map
-		  (",q" . 'kill-current-buffer)
-		  ("C-j" . 'evil-window-down)
-		  ("j" . 'my-next-line)
-		  ("k" . 'my-prev-line)
-		  ("C-k" . 'evil-window-up)
-		  ("C-h" . 'evil-window-left)
-		  ("C-l" . 'evil-window-right)
-		  ("L" . 'evil-next-buffer)
-		  ("H" . 'evil-prev-buffer)
-		  ("C-c C-c" .'compile)))
+          (",q" . 'kill-current-buffer)
+          ("C-j" . 'evil-window-down)
+          ("j" . 'my-next-line)
+          ("k" . 'my-prev-line)
+          ("C-k" . 'evil-window-up)
+          ("C-h" . 'evil-window-left)
+          ("C-l" . 'evil-window-right)
+          ("L" . 'evil-next-buffer)
+          ("H" . 'evil-prev-buffer)
+          ("C-c C-c" .'compile)))
 
 (use-package evil-collection
   :config
@@ -125,9 +125,9 @@
   :config
   (helm-mode 1)
   :bind (("M-x" . 'helm-M-x)
-		 ("C-x C-f" . 'helm-find-files)
-		 ("C-x C-b" . 'helm-buffers-list)
-		 ("C-x C-r" . 'helm-recentf)))
+         ("C-x C-f" . 'helm-find-files)
+         ("C-x C-b" . 'helm-buffers-list)
+         ("C-x C-r" . 'helm-recentf)))
 
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
@@ -135,7 +135,7 @@
 
 (use-package avy
   :bind (:map evil-normal-state-map
-	 ("f" . 'avy-goto-word-1)))
+     ("f" . 'avy-goto-word-1)))
 
 (use-package company
   :init
@@ -203,7 +203,7 @@
   (add-hook 'rust-mode-hook #'racer-mode)
   (add-hook 'rust-mode-hook #'flycheck-mode)
   (with-eval-after-load 'rust-mode
-	(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)))
+    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)))
 
 ;; PYTHON
 (use-package anaconda-mode)
@@ -241,10 +241,10 @@
 (use-package proof-general)
 
 (setq auto-mode-alist
-	  (append '(("\\.ml[ily]?$" . tuareg-mode)
-				("\\.topml$" . tuareg-mode)
-				("\\.atd$" . tuareg-mode))
-			  auto-mode-alist))
+      (append '(("\\.ml[ily]?$" . tuareg-mode)
+                ("\\.topml$" . tuareg-mode)
+                ("\\.atd$" . tuareg-mode))
+              auto-mode-alist))
 ;; (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
 (add-hook 'tuareg-mode-hook 'utop-minor-mode)
 (add-hook 'tuareg-mode-hook 'merlin-mode t)
@@ -258,17 +258,17 @@
 
 (let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
   (when (and opam-share (file-directory-p opam-share))
-	;; Register Merlin
-	(add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
-	(autoload 'merlin-mode "merlin" nil t nil)
-	(evil-define-key 'normal merlin-mode-map (kbd "K") 'merlin-document)
-	;; Automatically start it in OCaml buffers
-	(add-hook 'tuareg-mode-hook 'merlin-mode t)
-	(add-hook 'caml-mode-hook 'merlin-mode t)
-	;; Use opam switch to lookup ocamlmerlin binary
-	(setq merlin-command 'opam)
-	(add-to-list 'exec-path (substring (shell-command-to-string "opam config var bin") 0 -1))
-	(load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))))
+    ;; Register Merlin
+    (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
+    (autoload 'merlin-mode "merlin" nil t nil)
+    (evil-define-key 'normal merlin-mode-map (kbd "K") 'merlin-document)
+    ;; Automatically start it in OCaml buffers
+    (add-hook 'tuareg-mode-hook 'merlin-mode t)
+    (add-hook 'caml-mode-hook 'merlin-mode t)
+    ;; Use opam switch to lookup ocamlmerlin binary
+    (setq merlin-command 'opam)
+    (add-to-list 'exec-path (substring (shell-command-to-string "opam config var bin") 0 -1))
+    (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))))
 
 ;; (setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
 ;; (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
@@ -300,7 +300,7 @@
 
 ;; OCTAVE
 (setq auto-mode-alist
-	  (cons '("\\.m$" . octave-mode) auto-mode-alist))
+      (cons '("\\.m$" . octave-mode) auto-mode-alist))
 (defun my/octave-hook ()
   (define-key evil-normal-state-map (kbd "C-return") 'octave-send-line)
   (define-key evil-insert-state-map (kbd "C-return") 'octave-send-line))

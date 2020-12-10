@@ -19,6 +19,7 @@
  '(helm-M-x-reverse-history nil)
  '(helm-allow-mouse t)
  '(helm-completion-style 'emacs)
+ '(indent-tabs-mode nil)
  '(inhibit-startup-screen t)
  '(load-prefer-newer t)
  '(menu-bar-mode nil)
