@@ -2,6 +2,7 @@
 (defun emacs-dir (file)
   (concat user-emacs-directory file))
 
+(setq shell-command-switch "-ic")
 (load-file (emacs-dir "funcs.el"))
 
 (add-hook 'after-init-hook (lambda ()
@@ -31,9 +32,11 @@
 (use-package csv-mode)
 (use-package json-mode)
 
+(use-package geiser)
 (use-package paredit
-  :hook ((lisp-mode emacs-lisp-mode) . paredit-mode)
+  :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode)
   :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
+  :bind (:map scheme-mode-map     ("<return>" . paredit-newline))
   :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
 
 ;; BACKUP FILES
@@ -120,10 +123,10 @@
   (setq helm-M-x-fuzzy-match t)
   :config
   (helm-mode 1)
-  :bind (("M-x" . helm-M-x)
-		 ("C-x C-f" . helm-find-files)
-		 ("C-x C-b" . helm-buffers-list)
-		 ("C-x C-r" . helm-recentf)))
+  :bind (("M-x" . 'helm-M-x)
+		 ("C-x C-f" . 'helm-find-files)
+		 ("C-x C-b" . 'helm-buffers-list)
+		 ("C-x C-r" . 'helm-recentf)))
 
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
@@ -231,6 +234,7 @@
 
 (use-package dune)
 (use-package merlin)
+
 (use-package merlin-eldoc)
 (use-package utop)
 (use-package proof-general)
@@ -240,7 +244,7 @@
 				("\\.topml$" . tuareg-mode)
 				("\\.atd$" . tuareg-mode))
 			  auto-mode-alist))
-(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+;; (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
 (add-hook 'tuareg-mode-hook 'utop-minor-mode)
 (add-hook 'tuareg-mode-hook 'merlin-mode t)
 (add-hook 'tuareg-mode-hook 'company-mode t)
@@ -251,17 +255,28 @@
 
 ;; -- merlin setup ---------------------------------------
 
-(setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
-(add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
-;; So you can do it on a mac, where `C-<up>` and `C-<down>` are used
-;; by spaces.
-(define-key merlin-mode-map
-  (kbd "C-c <up>") 'merlin-type-enclosing-go-up)
-(define-key merlin-mode-map
-  (kbd "C-c <down>") 'merlin-type-enclosing-go-down)
-(define-key merlin-mode-map (kbd "K") 'merlin-document)
+(let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
+  (when (and opam-share (file-directory-p opam-share))
+	;; Register Merlin
+	(add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
+	(autoload 'merlin-mode "merlin" nil t nil)
+	(evil-define-key 'normal merlin-mode-map (kbd "K") 'merlin-document)
+	;; Automatically start it in OCaml buffers
+	(add-hook 'tuareg-mode-hook 'merlin-mode t)
+	(add-hook 'caml-mode-hook 'merlin-mode t)
+	;; Use opam switch to lookup ocamlmerlin binary
+	(setq merlin-command 'opam)
+	(add-to-list 'exec-path (substring (shell-command-to-string "opam config var bin") 0 -1))
+	(load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))))
 
-(load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
+;; (setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
+;; (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+;; ;; So you can do it on a mac, where `C-<up>` and `C-<down>` are used
+;; ;; by spaces.
+;; (define-key merlin-mode-map
+;;   (kbd "C-c <up>") 'merlin-type-enclosing-go-up)
+;; (define-key merlin-mode-map
+;;   (kbd "C-c <down>") 'merlin-type-enclosing-go-down)
 
 ;; DART
 ;; To install dart_language_server run 'pub global activate dart_language_server'
