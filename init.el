@@ -18,6 +18,7 @@
 (load custom-file)
 (defun package--save-selected-packages (&rest opt) nil)
 
+(add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook `prog-mode-hook (lambda ()
 				(whitespace-cleanup)
 				(show-paren-mode)))
