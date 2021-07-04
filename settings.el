@@ -25,6 +25,7 @@
  '(load-prefer-newer t)
  '(menu-bar-mode nil)
  '(org-agenda-files '("~/org/"))
+ '(org-export-backends '(ascii html icalendar latex md odt))
  '(org-fontify-done-headline t)
  '(ring-bell-function 'ignore)
  '(scroll-bar-mode nil)

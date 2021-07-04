@@ -129,6 +129,8 @@
          ("C-x C-b" . 'helm-buffers-list)
          ("C-x C-r" . 'helm-recentf)))
 
+(use-package org-mode)
+
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 (global-set-key (kbd "C-c s v") (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
