@@ -37,7 +37,7 @@
 (use-package paredit
   :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode)
   :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
-  :bind (:map scheme-mode-map     ("<return>" . paredit-newline))
+  ;; :bind (:map scheme-mode-map     ("<return>" . paredit-newline))
   :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
 
 ;; BACKUP FILES
@@ -164,6 +164,7 @@
   (global-diff-hl-mode 1))
 
 (use-package flycheck)
+
 (use-package eldoc
   :init
   (global-eldoc-mode)
@@ -237,7 +238,10 @@
 (use-package merlin)
 
 (use-package merlin-eldoc)
-(use-package utop)
+(use-package utop
+  :config
+  (setq utop-command "opam config exec -- dune utop . -- -emacs"))
+
 (use-package proof-general)
 
 (setq auto-mode-alist
@@ -292,8 +296,7 @@
 
   (setq dart-format-on-save t)
   (setq dart-sdk-path "~/.fluttersdk/bin/cache/dart-sdk/")
-  (eglot)
-  (add-to-list 'eglot-server-programs '(dart-mode . ("dart_language_server"))))
+  (eglot))
 (add-hook 'dart-mode-hook 'my/dart-hook)
 (add-hook 'dart-mode-hook 'eglot-ensure)
 (add-hook 'dart-mode-hook 'dart-server-hook)
@@ -306,4 +309,40 @@
   (define-key evil-insert-state-map (kbd "C-return") 'octave-send-line))
 (add-hook 'octave-mode-hook 'my/octave-hook)
 
+;; SCALA
+(use-package scala-mode)
+;; Enable sbt mode for executing sbt commands
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+   (setq sbt:program-options '("-Dsbt.supershell=false")))
+
+(use-package lsp-mode
+  ;; Optional - enable lsp-mode automatically in scala files
+  :hook
+  (scala-mode . lsp)
+  (lsp-mode . lsp-lens-mode)
+  :config (setq lsp-prefer-flymake nil))
+
+(use-package lsp-metals
+  :config (setq lsp-metals-treeview-show-when-views-received t))
+
+;; Add company-lsp backend for metals
+(use-package company-lsp)
+
+;; (use-package eglot
+;;   :config
+;;   (add-to-list 'eglot-server-programs '(scala-mode . ("metals-emacs")))
+;;   (add-to-list 'eglot-server-programs '(dart-mode . ("dart_language_server")))
+;;   ;; (optional) Automatically start metals for Scala files.
+;;   :hook ((scala-mode dart-mode) . eglot-ensure))
+
 (load-file (emacs-dir "post.el"))
+(load-file (emacs-dir "local.el"))
