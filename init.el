@@ -217,8 +217,7 @@
 (use-package anaconda-mode
   :hook
   (python-mode . anacoda-mode)
-  (python-mode . eglot-ensure)
-  )
+  (python-mode . eglot-ensure))
 
 ;; GO
 (use-package go-mode

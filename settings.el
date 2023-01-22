@@ -15,7 +15,7 @@
  '(disable-mouse-global-mode t nil (disable-mouse))
  '(eldoc-idle-delay 0.2)
  '(evil-collection-mode-list
-   '(magit))
+   '(magit xref dired))
  '(evil-undo-system 'undo-redo)
  '(flycheck-display-errors-delay 0.4)
  '(frame-brackground-mode 'dark)
