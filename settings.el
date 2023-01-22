@@ -14,6 +14,9 @@
  '(dired-use-ls-dired t)
  '(disable-mouse-global-mode t nil (disable-mouse))
  '(eldoc-idle-delay 0.2)
+ '(evil-collection-mode-list
+   '(magit))
+ '(evil-undo-system 'undo-redo)
  '(flycheck-display-errors-delay 0.4)
  '(frame-brackground-mode 'dark)
  '(helm-M-x-reverse-history nil)
@@ -24,14 +27,18 @@
  '(inhibit-startup-screen t)
  '(load-prefer-newer t)
  '(menu-bar-mode nil)
+ '(notmuch-hello-refresh-hook '(my/receive-mail))
+ '(notmuch-search-oldest-first nil)
  '(org-agenda-files '("~/org/"))
  '(org-export-backends '(ascii html icalendar latex md odt))
  '(org-fontify-done-headline t)
  '(ring-bell-function 'ignore)
  '(scroll-bar-mode nil)
+ '(send-mail-function 'mailclient-send-it)
  '(tab-width 4)
  '(tool-bar-mode nil)
- '(use-package-always-ensure t))
+ '(use-package-always-ensure t)
+ '(warning-suppress-log-types '((comp))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -40,7 +47,6 @@
  ;; If there is more than one, they won't work right.
  '(default ((t (:height 100 :foundry "ADBO" :family "Source Code Pro"))))
  '(cursor ((((background light)) (:background "ForestGreen"))))
- '(linum ((t (:foreground "chocolate"))))
  '(lsp-details-face ((t (:inherit shadow :height 0.8))))
  '(merlin-type-face ((((background dark)) (:inherit caml-types-expr-face :background "#333")) (((background light)) (:inherit caml-types-expr-face :background "#cff"))))
  '(region ((((background light)) (:extend t :background "beige" :distant-foreground "black"))))

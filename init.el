@@ -1,18 +1,28 @@
+(require 'f)
 ;; funcs
 (defun emacs-dir (file)
   (concat user-emacs-directory file))
 
 (setq shell-command-switch "-ic")
 (load-file (emacs-dir "funcs.el"))
+(add-to-list 'load-path "/home/henrik/.emacs.d/tree-sitter")
 
 (add-hook 'after-init-hook (lambda ()
-                             (time-sensitive-theme)))
+                             (dark-theme)))
+
+;; BACKUP FILES
+(setq backup-directory-alist `(("." . ,(emacs-dir "saves"))))
+(setq backup-by-copying t)
 
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
+(setq use-package-always-ensure 1)
+
 (define-key global-map (kbd "C-x C-c") (lambda () (interactive) (message "QUIT disabled, use ':q'")))
+
+(define-key global-map (kbd "C-c r") (lambda () (interactive) (recompile)))
 
 (setq custom-file (emacs-dir "settings.el"))
 (load custom-file)
@@ -30,25 +40,13 @@
                 (define-key blackbox-mode-map (kbd "l") 'bb-right)
                 (define-key blackbox-mode-map (kbd "r") 'blackbox)))
 
-(use-package csv-mode)
-(use-package json-mode)
+(use-package json-mode :ensure t)
 
-(use-package geiser)
-(use-package paredit
+(use-package paredit :ensure t
   :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode)
   :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
-  ;; :bind (:map scheme-mode-map     ("<return>" . paredit-newline))
   :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
 
-;; BACKUP FILES
-(setq backup-directory-alist `(("." . ,(emacs-dir "saves"))))
-(setq backup-by-copying t)
-
-(when (not (package-installed-p 'use-package))
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(require 'use-package-ensure)
 
 ;; themes
 (use-package gruber-darker-theme
@@ -60,7 +58,7 @@
   :config
   (sml/setup))
 
-(add-hook 'prog-mode-hook 'linum-mode)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 ;; DISABLE MOUSE
 (use-package disable-mouse
@@ -86,7 +84,7 @@
 (use-package yasnippet
   :init
   (yas-global-mode)
-  (setq yas-snippet-dirs '("~/emacs.d/snippets")))
+  (setq yas-snippet-dirs '("~/.emacs.d/snippets")))
 
 (use-package key-chord
   :config
@@ -129,8 +127,6 @@
          ("C-x C-b" . 'helm-buffers-list)
          ("C-x C-r" . 'helm-recentf)))
 
-(use-package org-mode)
-
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 (global-set-key (kbd "C-c s v") (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
@@ -149,7 +145,6 @@
   :bind
   ("C-x g" . magit-status)
   :config
-  (use-package evil-magit)
   (use-package with-editor)
   (setq magit-push-always-verify nil)
   (setq git-commit-summary-max-length 50)
@@ -165,18 +160,22 @@
   :init
   (global-diff-hl-mode 1))
 
-(use-package flycheck)
+(use-package notmuch
+  :config
+  (setq sendmail-program "/usr/bin/msmtp")
+  (setq mail-specify-envelope-from t)
+  (setq message-sendmail-envelope-from 'header)
+  (setq mail-envelope-from 'header)
+  (setq send-mail-function 'message-send-mail-with-sendmail))
 
 (use-package eldoc
-  :init
+  :config
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
-
 (use-package projectile
-  :init
-  (projectile-mode t)
-  (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map))
+  :config
+  (projectile-mode t))
 
 (use-package helm-projectile
   :init
@@ -196,10 +195,17 @@
   :config
   (pdf-tools-install))
 
+(use-package eglot :ensure nil
+  :bind (:map evil-normal-state-map
+              ("g d" . 'xref-find-definitions)
+              ("g r" . 'xref-find-references)
+              ("g a" . 'eglot-code-actions)
+              ("C-c C-x" . 'flymake-goto-next-error)
+              ("C-c C-d" . 'flymake-show-project-diagnostics)
+              ("K" . 'eldoc-doc-buffer)))
+
 ;; RUST
-(use-package flycheck-rust)
 (use-package toml-mode)
-(use-package racer)
 (use-package rust-mode
   :config
   (setq rust-format-on-save t)
@@ -209,60 +215,61 @@
     (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)))
 
 ;; PYTHON
-(use-package anaconda-mode)
-(use-package company-anaconda)
-
-(eval-after-load "company" '(add-to-list 'company-backends 'company-anaconda))
-(add-hook 'python-mode-hook 'anaconda-mode)
-(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+(use-package anaconda-mode
+  :hook
+  (python-mode . anacoda-mode)
+  (python-mode . eglot-ensure)
+  )
 
 ;; GO
-(use-package company-go)
-(use-package go-mode)
+(use-package go-mode
+  :init
+  (add-to-list 'exec-path "/usr/local/go/bin")
+  (add-to-list 'exec-path (f-join (getenv "HOME" ) "go/bin"))
+  (setenv "PATH" "/usr/local/go/bin:$PATH" t)
+  (defun project-find-go-module (dir)
+    (when-let ((root (locate-dominating-file dir "go.mod")))
+      (cons 'go-module root)))
 
-(use-package go-eldoc)
+  (cl-defmethod project-root ((project (head go-module)))
+    (cdr project))
 
-(defun my/go-mode-hook ()
-  (setq indent-tabs-mode 1)
-  (setq tab-width 4)
-  (add-hook 'before-save-hook 'gofmt-before-save)
-  (set (make-local-variable 'company-backends) '(company-go))
-  (company-mode)
-  (go-eldoc-setup))
+  (add-hook 'project-find-functions #'project-find-go-module)
+  :config
+  :hook
+  (go-mode . (lambda ()
+               (setq indent-tabs-mode 1)
+               (setq tab-width 4)
+               (add-hook 'before-save-hook 'gofmt-before-save)
+               (define-key go-mode-map (kbd "gd") nil)
+               (eglot-ensure))))
 
-(add-hook 'go-mode-hook 'my/go-mode-hook)
-
+(use-package proof-general)
 
 ;; OCAML
-(use-package tuareg)
+;; -- merlin setup ---------------------------------------
 
-(use-package dune)
+(use-package ocamlformat
+  :custom (ocamlformat-enable 'enable-outside-detected-project)
+  :hook (before-save . ocamlformat-before-save))
+
+(use-package tuareg
+  :init
+  (add-hook 'tuareg-mode (lambda () (progn
+                                      (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
+  :hook
+  (tuareg-mode . eglot-ensure))
+
 (use-package merlin)
 
-(use-package merlin-eldoc)
+(use-package dune)
+
 (use-package utop
   :config
   (setq utop-command "opam config exec -- dune utop . -- -emacs"))
 
-(use-package proof-general)
-
-(setq auto-mode-alist
-      (append '(("\\.ml[ily]?$" . tuareg-mode)
-                ("\\.topml$" . tuareg-mode)
-                ("\\.atd$" . tuareg-mode))
-              auto-mode-alist))
-;; (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
-(add-hook 'tuareg-mode-hook 'utop-minor-mode)
-(add-hook 'tuareg-mode-hook 'merlin-mode t)
-(add-hook 'tuareg-mode-hook 'company-mode t)
-(add-hook 'merlin-mode-hook 'merlin-eldoc-setup)
-(setq merlin-error-after-save t)
-;; :bind (:map tuareg-mode-map ("K" . merlin-document)))
-
-
 ;; -- merlin setup ---------------------------------------
-
-(let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
+(let ((opam-share (ignore-errors (car (process-lines "opam" "var" "share")))))
   (when (and opam-share (file-directory-p opam-share))
     ;; Register Merlin
     (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
@@ -273,7 +280,8 @@
     (add-hook 'caml-mode-hook 'merlin-mode t)
     ;; Use opam switch to lookup ocamlmerlin binary
     (setq merlin-command 'opam)
-    (add-to-list 'exec-path (substring (shell-command-to-string "opam config var bin") 0 -1))
+    (add-to-list 'exec-path (substring (shell-command-to-string "opam var bin") 0 -1))
+    (setenv "PATH" (s-concat (substring (shell-command-to-string "opam var bin") 0 -1) ":$PATH") t)
     (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))))
 
 ;; (setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
@@ -287,7 +295,6 @@
 
 ;; DART
 ;; To install dart_language_server run 'pub global activate dart_language_server'
-(use-package eglot)
 (use-package dart-mode)
 (use-package dart-server)
 (use-package flutter)
@@ -295,21 +302,12 @@
 (defun my/dart-hook ()
   (define-key evil-normal-state-map (kbd "C-c C-r") 'flutter-run-or-hot-reload)
   (setq flutter-sdk-path "~/.fluttersdk/")
-
   (setq dart-format-on-save t)
   (setq dart-sdk-path "~/.fluttersdk/bin/cache/dart-sdk/")
   (eglot))
 (add-hook 'dart-mode-hook 'my/dart-hook)
 (add-hook 'dart-mode-hook 'eglot-ensure)
 (add-hook 'dart-mode-hook 'dart-server-hook)
-
-;; OCTAVE
-(setq auto-mode-alist
-      (cons '("\\.m$" . octave-mode) auto-mode-alist))
-(defun my/octave-hook ()
-  (define-key evil-normal-state-map (kbd "C-return") 'octave-send-line)
-  (define-key evil-insert-state-map (kbd "C-return") 'octave-send-line))
-(add-hook 'octave-mode-hook 'my/octave-hook)
 
 ;; SCALA
 (use-package scala-mode)
@@ -326,25 +324,4 @@
    ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
    (setq sbt:program-options '("-Dsbt.supershell=false")))
 
-(use-package lsp-mode
-  ;; Optional - enable lsp-mode automatically in scala files
-  :hook
-  (scala-mode . lsp)
-  (lsp-mode . lsp-lens-mode)
-  :config (setq lsp-prefer-flymake nil))
-
-(use-package lsp-metals
-  :config (setq lsp-metals-treeview-show-when-views-received t))
-
-;; Add company-lsp backend for metals
-(use-package company-lsp)
-
-;; (use-package eglot
-;;   :config
-;;   (add-to-list 'eglot-server-programs '(scala-mode . ("metals-emacs")))
-;;   (add-to-list 'eglot-server-programs '(dart-mode . ("dart_language_server")))
-;;   ;; (optional) Automatically start metals for Scala files.
-;;   :hook ((scala-mode dart-mode) . eglot-ensure))
-
-(load-file (emacs-dir "post.el"))
-(load-file (emacs-dir "local.el"))
+(use-package erlang)
