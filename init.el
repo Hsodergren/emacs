@@ -5,7 +5,6 @@
 
 (setq shell-command-switch "-ic")
 (load-file (emacs-dir "funcs.el"))
-(add-to-list 'load-path "/home/henrik/.emacs.d/tree-sitter")
 
 (add-hook 'after-init-hook (lambda ()
                              (dark-theme)))
