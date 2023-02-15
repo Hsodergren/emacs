@@ -99,7 +99,6 @@
   :config
   (evil-mode 1)
   (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-  (evil-ex-define-cmd "ls" 'helm-mini)
   :bind (:map evil-normal-state-map
           (",q" . 'kill-current-buffer)
           ("C-j" . 'evil-window-down)
@@ -116,15 +115,30 @@
   :config
   (evil-collection-init))
 
-(use-package helm
+(use-package compat
+  :ensure t)
+(use-package vertico
   :init
-  (setq helm-M-x-fuzzy-match t)
-  :config
-  (helm-mode 1)
-  :bind (("M-x" . 'helm-M-x)
-         ("C-x C-f" . 'helm-find-files)
-         ("C-x C-b" . 'helm-buffers-list)
-         ("C-x C-r" . 'helm-recentf)))
+  (vertico-mode))
+(use-package marginalia
+  :after vertico
+  :init
+  (marginalia-mode))
+(use-package orderless
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+(use-package embark
+  :ensure t
+  :bind
+  (("M-." . embark-act)
+   (:map evil-normal-state-map
+         ("M-." . embark-act))))
+(use-package embark-consult)
+
+(use-package consult-eglot
+  :ensure t)
 
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
@@ -176,20 +190,6 @@
   :config
   (projectile-mode t))
 
-(use-package helm-projectile
-  :init
-  (helm-projectile-on)
-  :bind
-  (("C-x C-g" . helm-projectile)
-   ("C-x p r" . helm-projectile-recentf)))
-;;(setq help-mode-fuzzy-match t)
-;;(setq helm-completion-in-region-fuzzy-match t)
-(setq helm-grep-ag-command "rg --color=always --colors 'match:fg:red' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s")
-(setq helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:red'" "--colors 'match:bg:yellow'"))
-
-;;(add-to-list 'load-path "~/.emacs.d/emacs-application-framework")
-;;(require 'eaf)
-
 (use-package pdf-tools
   :config
   (pdf-tools-install))
@@ -239,7 +239,6 @@
                (setq indent-tabs-mode 1)
                (setq tab-width 4)
                (add-hook 'before-save-hook 'gofmt-before-save)
-               (define-key go-mode-map (kbd "gd") nil)
                (eglot-ensure))))
 
 (use-package proof-general)
@@ -259,9 +258,7 @@
   (tuareg-mode . eglot-ensure))
 
 (use-package merlin)
-
 (use-package dune)
-
 (use-package utop
   :config
   (setq utop-command "opam config exec -- dune utop . -- -emacs"))
