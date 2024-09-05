@@ -1,4 +1,3 @@
-(require 'f)
 ;; funcs
 (defun emacs-dir (file)
   (concat user-emacs-directory file))
@@ -18,8 +17,6 @@
 (package-initialize)
 
 (setq use-package-always-ensure 1)
-
-(define-key global-map (kbd "C-x C-c") (lambda () (interactive) (message "QUIT disabled, use ':q'")))
 
 (define-key global-map (kbd "C-c r") (lambda () (interactive) (recompile)))
 
@@ -65,6 +62,12 @@
   (global-disable-mouse-mode))
 
 (use-package rainbow-mode)
+(use-package sideline-flymake)
+(use-package sideline
+  :config
+  (setq sideline-backends-right '(sideline-flymake))
+  :hook
+  (flymake-mode . sideline-mode))
 
 (use-package fancy-battery
   :init
@@ -73,8 +76,6 @@
 (use-package zoom-window
   :bind
   ("M-z" . zoom-window-zoom))
-
-(use-package flymake-cursor)
 
 (use-package auto-compile
   :config
@@ -90,69 +91,48 @@
   (key-chord-mode 1)
   (setq key-chord-two-keys-delay 0.2))
 
-(use-package evil
-  :ensure t
-  :init
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-integration t)
-  :config
-  (evil-mode 1)
-  (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-  :bind (:map evil-normal-state-map
-          (",q" . 'kill-current-buffer)
-          ("C-j" . 'evil-window-down)
-          ("j" . 'my-next-line)
-          ("k" . 'my-prev-line)
-          ("C-k" . 'evil-window-up)
-          ("C-h" . 'evil-window-left)
-          ("C-l" . 'evil-window-right)
-          ("L" . 'evil-next-buffer)
-          ("H" . 'evil-prev-buffer)
-          ("C-c C-c" .'compile)))
 
-(use-package evil-collection
-  :config
-  (evil-collection-init))
 
 (use-package compat
   :ensure t)
+
 (use-package vertico
   :init
   (vertico-mode))
+
 (use-package marginalia
   :after vertico
   :init
   (marginalia-mode))
+
 (use-package orderless
   :init
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
+
 (use-package embark
-  :ensure t
-  :bind
-  (("M-." . embark-act)
-   (:map evil-normal-state-map
-         ("M-." . embark-act))))
+  :ensure t)
+
 (use-package embark-consult)
 
 (use-package consult-eglot
   :ensure t)
 
+(use-package corfu
+  :custom
+  (corfu-separator ?\s)
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-cycle t)
+  (corfu-preselect 'prompt)
+  :init
+  (global-corfu-mode)
+  (setq tab-always-indent t))
+
 ;; bindings
 (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 (global-set-key (kbd "C-c s v") (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
-
-(use-package avy
-  :bind (:map evil-normal-state-map
-     ("f" . 'avy-goto-word-1)))
-
-(use-package company
-  :init
-  (add-hook 'after-init-hook 'global-company-mode)
-  :bind
-  ("M-/" . 'company-complete-common))
 
 (use-package magit
   :bind
@@ -163,11 +143,7 @@
   (setq git-commit-summary-max-length 50)
   (setq magit-diff-refine-hunk t))
 
-(use-package git-timemachine
-  :config
-  (evil-make-overriding-map git-timemachine-mode-map 'normal)
-  ;; force update evil keymaps after git-timemachine-mode loaded
-  (add-hook 'git-timemachine-mode-hook #'evil-normalize-keymaps))
+(use-package git-timemachine)
 
 (use-package diff-hl
   :init
@@ -186,62 +162,37 @@
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
-(use-package projectile
-  :config
-  (projectile-mode t))
-
 (use-package pdf-tools
   :config
   (pdf-tools-install))
 
 (use-package eglot :ensure nil
-  :bind (:map evil-normal-state-map
-              ("g d" . 'xref-find-definitions)
-              ("g r" . 'xref-find-references)
-              ("g a" . 'eglot-code-actions)
-              ("C-c C-x" . 'flymake-goto-next-error)
-              ("C-c C-d" . 'flymake-show-project-diagnostics)
-              ("K" . 'eldoc-doc-buffer)))
-
-;; RUST
-(use-package toml-mode)
-(use-package rust-mode
   :config
-  (setq rust-format-on-save t)
-  (add-hook 'rust-mode-hook #'racer-mode)
-  (add-hook 'rust-mode-hook #'flycheck-mode)
-  (with-eval-after-load 'rust-mode
-    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)))
+  (setq-default eglot-workspace-configuration '(:gopls (:hints
+                                                        (:assignVariableTypes t
+                                                         :compositeLiteralFields t
+                                                         :compositeLiteralTypes t
+                                                         :functionTypeParameters t
+                                                         :parameterNames t
+                                                         :rangeVariableTypes t)
+                                                        :usePlaceholders t))))
 
 ;; PYTHON
-(use-package anaconda-mode
-  :hook
-  (python-mode . anacoda-mode)
-  (python-mode . eglot-ensure))
+(use-package python
+  :ensure nil
+  :init
+  (eglot-ensure))
 
-;; GO
 (use-package go-mode
   :init
-  (add-to-list 'exec-path "/usr/local/go/bin")
-  (add-to-list 'exec-path (f-join (getenv "HOME" ) "go/bin"))
-  (setenv "PATH" "/usr/local/go/bin:$PATH" t)
-  (defun project-find-go-module (dir)
-    (when-let ((root (locate-dominating-file dir "go.mod")))
-      (cons 'go-module root)))
+  (eglot-ensure))
 
-  (cl-defmethod project-root ((project (head go-module)))
-    (cdr project))
-
-  (add-hook 'project-find-functions #'project-find-go-module)
+(use-package org
+  :ensure nil
   :config
-  :hook
-  (go-mode . (lambda ()
-               (setq indent-tabs-mode 1)
-               (setq tab-width 4)
-               (add-hook 'before-save-hook 'gofmt-before-save)
-               (eglot-ensure))))
+  (auto-fill-mode)
+  (setq fill-column 100))
 
-(use-package proof-general)
 
 ;; OCAML
 ;; -- merlin setup ---------------------------------------
@@ -259,9 +210,10 @@
 
 (use-package merlin)
 (use-package dune)
-(use-package utop
-  :config
-  (setq utop-command "opam config exec -- dune utop . -- -emacs"))
+;; (use-package utop
+;;   :config
+;;   (setq utop-command "opam config exec -- dune utop . -- -emacs"))
+(use-package utop)
 
 ;; -- merlin setup ---------------------------------------
 (let ((opam-share (ignore-errors (car (process-lines "opam" "var" "share")))))
@@ -269,15 +221,17 @@
     ;; Register Merlin
     (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
     (autoload 'merlin-mode "merlin" nil t nil)
-    (evil-define-key 'normal merlin-mode-map (kbd "K") 'merlin-document)
     ;; Automatically start it in OCaml buffers
-    (add-hook 'tuareg-mode-hook 'merlin-mode t)
-    (add-hook 'caml-mode-hook 'merlin-mode t)
+    ;; (add-hook 'tuareg-mode-hook 'merlin-mode t)
+    ;; (add-hook 'caml-mode-hook 'merlin-mode t)
     ;; Use opam switch to lookup ocamlmerlin binary
     (setq merlin-command 'opam)
     (add-to-list 'exec-path (substring (shell-command-to-string "opam var bin") 0 -1))
-    (setenv "PATH" (s-concat (substring (shell-command-to-string "opam var bin") 0 -1) ":$PATH") t)
-    (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))))
+    (setenv "PATH" (concat (substring (shell-command-to-string "opam var bin") 0 -1) ":$PATH") t)
+    (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
+    (load-file (concat opam-share "/emacs/site-lisp/dune.el"))
+    (load-file (concat opam-share "/emacs/site-lisp/dune-flymake.el"))
+    (load-file (concat opam-share "/emacs/site-lisp/dune-watch.el"))))
 
 ;; (setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
 ;; (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
@@ -290,19 +244,18 @@
 
 ;; DART
 ;; To install dart_language_server run 'pub global activate dart_language_server'
-(use-package dart-mode)
+(use-package dart-mode
+  :config
+  (add-to-list 'exec-path (string-join (list (getenv "HOME") ".flutter" "bin") "/"))
+  (setq flutter-sdk-path "~/.flutter/")
+  (setq dart-format-on-save t)
+  (setq dart-sdk-path "~/.fluttersdk/bin/cache/dart-sdk/")
+  :hook
+  (dart-mode . eglot-ensure))
+
 (use-package dart-server)
 (use-package flutter)
 (use-package flutter-l10n-flycheck)
-(defun my/dart-hook ()
-  (define-key evil-normal-state-map (kbd "C-c C-r") 'flutter-run-or-hot-reload)
-  (setq flutter-sdk-path "~/.fluttersdk/")
-  (setq dart-format-on-save t)
-  (setq dart-sdk-path "~/.fluttersdk/bin/cache/dart-sdk/")
-  (eglot))
-(add-hook 'dart-mode-hook 'my/dart-hook)
-(add-hook 'dart-mode-hook 'eglot-ensure)
-(add-hook 'dart-mode-hook 'dart-server-hook)
 
 ;; SCALA
 (use-package scala-mode)
@@ -320,3 +273,8 @@
    (setq sbt:program-options '("-Dsbt.supershell=false")))
 
 (use-package erlang)
+
+(use-package protobuf-mode)
+
+(define-derived-mode test-mode nil "test")
+(add-to-list 'eglot-server-programs '(test-mode "/home/henrik/programming/ocaml/a_lsp/_build/default/bin/main.exe"))
