@@ -69,32 +69,22 @@
   :hook
   (flymake-mode . sideline-mode))
 
-(use-package fancy-battery
-  :init
-  (add-hook 'after-init-hook #'fancy-battery-mode))
-
 (use-package zoom-window
   :bind
   ("M-z" . zoom-window-zoom))
-
-(use-package auto-compile
-  :config
-  (auto-compile-on-load-mode))
 
 (use-package yasnippet
   :init
   (yas-global-mode)
   (setq yas-snippet-dirs '("~/.emacs.d/snippets")))
 
-(use-package key-chord
-  :config
-  (key-chord-mode 1)
-  (setq key-chord-two-keys-delay 0.2))
-
-
-
-(use-package compat
+(use-package markdown-mode
   :ensure t)
+
+(use-package expand-region
+  :ensure t
+  :config
+  (global-set-key (kbd "C-=") #'er/expand-region))
 
 (use-package vertico
   :init
@@ -112,7 +102,9 @@
         completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
-  :ensure t)
+  :ensure t
+  :config
+  (global-set-key (kbd "C-.") #'embark-act))
 
 (use-package embark-consult)
 
