@@ -38,7 +38,9 @@
   (add-hook 'before-save-hook 'whitespace-cleanup)
   (add-hook `prog-mode-hook (lambda ()
 			      (whitespace-cleanup)
-			      (show-paren-mode))))
+			      (show-paren-mode)))
+  :custom-face
+  (shadow ((t (:foreground "#707070")))))
 
 (use-package disable-mouse
   :init
@@ -180,25 +182,24 @@
   (tuareg-mode . eglot-ensure))
 
 (use-package merlin
-  :config
+  :demand t
+  :init
   (let ((opam-share (ignore-errors (car (process-lines "opam" "var" "share")))))
-  (when (and opam-share (file-directory-p opam-share))
-    ;; Register Merlin
-    (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
-    (autoload 'merlin-mode "merlin" nil t nil)
-    ;; Automatically start it in OCaml buffers
-    ;; (add-hook 'tuareg-mode-hook 'merlin-mode t)
-    ;; (add-hook 'caml-mode-hook 'merlin-mode t)
-    ;; Use opam switch to lookup ocamlmerlin binary
-    (setq merlin-command 'opam)
-    (add-to-list 'exec-path (substring (shell-command-to-string "opam var bin") 0 -1))
-    (setenv "PATH" (concat (substring (shell-command-to-string "opam var bin") 0 -1) ":$PATH") t)
-    (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
-    (load-file (concat opam-share "/emacs/site-lisp/dune.el"))
-    (load-file (concat opam-share "/emacs/site-lisp/dune-flymake.el"))
-    (load-file (concat opam-share "/emacs/site-lisp/dune-watch.el")))))
-(use-package dune)
-(use-package utop)
+    (when (and opam-share (file-directory-p opam-share))
+      ;; Register Merlin
+      (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
+      (autoload 'merlin-mode "merlin" nil t nil)
+      ;; Automatically start it in OCaml buffers
+      ;; (add-hook 'tuareg-mode-hook 'merlin-mode t)
+      ;; (add-hook 'caml-mode-hook 'merlin-mode t)
+      ;; Use opam switch to lookup ocamlmerlin binary
+      (setq merlin-command 'opam)
+      (add-to-list 'exec-path (substring (shell-command-to-string "opam var bin") 0 -1))
+      (setenv "PATH" (concat (substring (shell-command-to-string "opam var bin") 0 -1) ":$PATH") t)
+      (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
+      (load-file (concat opam-share "/emacs/site-lisp/dune.el"))
+      (load-file (concat opam-share "/emacs/site-lisp/dune-flymake.el"))
+      (load-file (concat opam-share "/emacs/site-lisp/dune-watch.el")))))
 
 ;; DART
 ;; To install dart_language_server run 'pub global activate dart_language_server'
