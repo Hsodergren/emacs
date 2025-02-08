@@ -1,10 +1,11 @@
-;; funcs
-(defun emacs-dir (file)
-  (concat user-emacs-directory file))
-
 ;; BACKUP FILES
-(setq backup-directory-alist `(("." . ,(emacs-dir "saves"))))
+(setq backup-directory-alist `(("." . ,(concat user-emacs-directory "saves"))))
 (setq backup-by-copying t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(defun add-to-path (path)
+  (add-to-list 'exec-path path)
+  (setenv "PATH" (string-join (list (getenv "PATH") path) ":")))
 
 (use-package use-package
   :init
@@ -26,6 +27,14 @@
   (load-theme 'gruber-darker :no-confirm))
 
 (use-package emacs
+  :init
+  (require 'em-tramp)
+  (setq password-cache t)
+  (setq password-cache-expiry 600)
+  (setq-default tab-width 4)
+  (setq ring-bell-function 'ignore)
+  (dolist (path(list (string-join (list (getenv "HOME") "/bin"))))
+	(add-to-path path))
   :config
   (scroll-bar-mode -1)
   (menu-bar-mode -1)
@@ -37,8 +46,8 @@
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'before-save-hook 'whitespace-cleanup)
   (add-hook `prog-mode-hook (lambda ()
-			      (whitespace-cleanup)
-			      (show-paren-mode)))
+				  (whitespace-cleanup)
+				  (show-paren-mode)))
   :custom-face
   (shadow ((t (:foreground "#707070")))))
 
@@ -82,8 +91,8 @@
 (use-package orderless
   :init
   (setq completion-styles '(orderless basic)
-    completion-category-defaults nil
-    completion-category-overrides '((file (styles partial-completion)))))
+	completion-category-defaults nil
+	completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
   :ensure t
@@ -122,14 +131,6 @@
   :init
   (global-diff-hl-mode 1))
 
-(use-package notmuch
-  :config
-  (setq sendmail-program "/usr/bin/msmtp")
-  (setq mail-specify-envelope-from t)
-  (setq message-sendmail-envelope-from 'header)
-  (setq mail-envelope-from 'header)
-  (setq send-mail-function 'message-send-mail-with-sendmail))
-
 (use-package eldoc
   :config
   (global-eldoc-mode)
@@ -142,13 +143,13 @@
 (use-package eglot :ensure nil
   :config
   (setq-default eglot-workspace-configuration '(:gopls (:hints
-			    (:assignVariableTypes t
-			     :compositeLiteralFields t
-			     :compositeLiteralTypes t
-			     :functionTypeParameters t
-			     :parameterNames t
-			     :rangeVariableTypes t)
-			    :usePlaceholders t))))
+				(:assignVariableTypes t
+				 :compositeLiteralFields t
+				 :compositeLiteralTypes t
+				 :functionTypeParameters t
+				 :parameterNames t
+				 :rangeVariableTypes t)
+				:usePlaceholders t))))
 
 ;; PYTHON
 (use-package python
@@ -162,13 +163,34 @@
 
 (use-package org
   :ensure nil
+  :init
+  (setq org-default-notes-file "~/org/notes.org")
+  (setq org-directory "~/org/")
+  (setq org-agenda-files '("tasks.org" "calendar.org"))
+  (setq org-capture-templates
+		`(("t" "Task" entry (file "tasks.org")
+		   "* TODO %? %^g")
+		  ("c" "Calendar item")
+		  ("cs" "Single (Single day event" entry (file "calendar.org")
+		   "* %? \n%^t")
+		  ("cr" "Range (Multiple day event)" entry (file "calendar.org")
+		   "* %? \n%^{From:}t--%^{To:}t")))
+  (setq calendar-week-start-day 1)
   :config
   (auto-fill-mode)
-  (setq fill-column 100))
+  (setq fill-column 100)
+  :bind
+  (("C-c a" . 'org-agenda)
+   ("C-c c" . 'org-capture)))
 
-
-;; OCAML
-;; -- merlin setup ---------------------------------------
+(use-package eshell
+  :demand t
+  :config
+  (add-to-list 'eshell-modules-list 'eshell-elecslash)
+  (setq eshell-visual-commands
+		'("gtypist" "vi" "vim" "nvim" "screen" "tmux" "top" "htop" "less"
+		  "more" "lynx" "links" "ncftp" "ncmpcpp" "mutt" "pine" "tin" "trn"
+		  "elm")))
 
 (use-package ocamlformat
   :custom (ocamlformat-enable 'enable-outside-detected-project)
@@ -177,29 +199,9 @@
 (use-package tuareg
   :init
   (add-hook 'tuareg-mode (lambda () (progn
-		      (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
+			  (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
   :hook
   (tuareg-mode . eglot-ensure))
-
-(use-package merlin
-  :demand t
-  :init
-  (let ((opam-share (ignore-errors (car (process-lines "opam" "var" "share")))))
-    (when (and opam-share (file-directory-p opam-share))
-      ;; Register Merlin
-      (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
-      (autoload 'merlin-mode "merlin" nil t nil)
-      ;; Automatically start it in OCaml buffers
-      ;; (add-hook 'tuareg-mode-hook 'merlin-mode t)
-      ;; (add-hook 'caml-mode-hook 'merlin-mode t)
-      ;; Use opam switch to lookup ocamlmerlin binary
-      (setq merlin-command 'opam)
-      (add-to-list 'exec-path (substring (shell-command-to-string "opam var bin") 0 -1))
-      (setenv "PATH" (concat (substring (shell-command-to-string "opam var bin") 0 -1) ":$PATH") t)
-      (load-file (concat opam-share "/emacs/site-lisp/ocp-indent.el"))
-      (load-file (concat opam-share "/emacs/site-lisp/dune.el"))
-      (load-file (concat opam-share "/emacs/site-lisp/dune-flymake.el"))
-      (load-file (concat opam-share "/emacs/site-lisp/dune-watch.el")))))
 
 ;; DART
 ;; To install dart_language_server run 'pub global activate dart_language_server'
@@ -231,5 +233,7 @@
    (setq sbt:program-options '("-Dsbt.supershell=false")))
 
 (use-package erlang)
+
+(use-package zig-mode)
 
 (use-package protobuf-mode)
