@@ -1,7 +1,8 @@
 ;; BACKUP FILES
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "saves"))))
 (setq backup-by-copying t)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(setq auth-sources '((:source "~/.authinfo.gpg")))
 
 (defun add-to-path (path)
   (add-to-list 'exec-path path)
@@ -35,6 +36,7 @@
   (setq ring-bell-function 'ignore)
   (dolist (path(list (string-join (list (getenv "HOME") "/bin"))))
 	(add-to-path path))
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
   :config
   (scroll-bar-mode -1)
   (menu-bar-mode -1)
@@ -49,11 +51,28 @@
 				  (whitespace-cleanup)
 				  (show-paren-mode)))
   :custom-face
-  (shadow ((t (:foreground "#707070")))))
+  (shadow ((t (:foreground "#707070"))))
+  :bind
+  ("M-o" . other-window))
 
 (use-package disable-mouse
   :init
   (global-disable-mouse-mode))
+
+(use-package dired
+  :ensure nil
+  :config
+  (setq dired-listing-switches "-alh")
+  (defun dired-kill-ring-save-path ()
+	(interactive)
+	(if-let ((path (dired-get-filename nil t)))
+		(kill-new path)))
+
+  (defun dired-kill-ring-save-path-as-string ()
+	(interactive)
+	(if-let ((path (dired-get-filename nil t)))
+		(kill-new (format "\"%s\"" path)))))
+
 
 (use-package rainbow-mode)
 (use-package sideline-flymake)
@@ -112,18 +131,20 @@
   (corfu-preselect 'prompt)
   :init
   (global-corfu-mode)
+  (keymap-set corfu-map "RET" #'corfu-send)
   (setq tab-always-indent t))
+
 
 ;; bindings
 
 (use-package magit
-  :bind
-  ("C-x g" . magit-status)
   :config
   (use-package with-editor)
   (setq magit-push-always-verify nil)
   (setq git-commit-summary-max-length 50)
-  (setq magit-diff-refine-hunk t))
+  (setq magit-diff-refine-hunk t)
+  :bind
+  ("C-x g" . #'magit-status))
 
 (use-package git-timemachine)
 
@@ -136,10 +157,6 @@
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
-(use-package pdf-tools
-  :config
-  (pdf-tools-install))
-
 (use-package eglot :ensure nil
   :config
   (setq-default eglot-workspace-configuration '(:gopls (:hints
@@ -149,7 +166,8 @@
 				 :functionTypeParameters t
 				 :parameterNames t
 				 :rangeVariableTypes t)
-				:usePlaceholders t))))
+				:usePlaceholders t)))
+  (setq eglot-stay-out-of '(imenu)))
 
 ;; PYTHON
 (use-package python
@@ -160,6 +178,8 @@
 (use-package go-mode
   :init
   (eglot-ensure))
+
+(use-package rust-mode)
 
 (use-package org
   :ensure nil
@@ -183,14 +203,29 @@
   (("C-c a" . 'org-agenda)
    ("C-c c" . 'org-capture)))
 
+(use-package ledger-mode
+  :config
+  (setq ledger-reports
+		'(("bal" "%(binary) -f %(ledger-file) bal --no-color")
+		  ("reg" "%(binary) -f %(ledger-file) reg --no-color")
+		  ("payee" "%(binary) -f %(ledger-file) reg @%(payee) --no-color")
+		  ("account" "%(binary) -f %(ledger-file) reg %(account) --no-color")))
+  :mode "\\.dat")
+
+(use-package eat)
 (use-package eshell
   :demand t
   :config
   (add-to-list 'eshell-modules-list 'eshell-elecslash)
-  (setq eshell-visual-commands
-		'("gtypist" "vi" "vim" "nvim" "screen" "tmux" "top" "htop" "less"
-		  "more" "lynx" "links" "ncftp" "ncmpcpp" "mutt" "pine" "tin" "trn"
-		  "elm")))
+  (add-to-list 'eshell-modules-list 'eshell-tramp)
+
+  (setq eshell-visual-commands nil)
+  :hook
+  (eshell-mode . (lambda ()
+				   (set-face-foreground 'eshell-prompt "pink3")
+				   (eat-eshell-mode))))
+
+(use-package ellama)
 
 (use-package ocamlformat
   :custom (ocamlformat-enable 'enable-outside-detected-project)
@@ -199,9 +234,15 @@
 (use-package tuareg
   :init
   (add-hook 'tuareg-mode (lambda () (progn
-			  (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
+									  (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
   :hook
-  (tuareg-mode . eglot-ensure))
+  (tuareg-mode . eglot-ensure)
+  (tuareg-mode . ocaml-eglot))
+
+(use-package ocaml-eglot
+  :ensure  t
+  :after tuareg)
+
 
 ;; DART
 ;; To install dart_language_server run 'pub global activate dart_language_server'
@@ -215,7 +256,6 @@
   (dart-mode . eglot-ensure))
 
 (use-package flutter)
-(use-package flutter-l10n-flycheck)
 
 ;; SCALA
 (use-package scala-mode)
@@ -237,3 +277,26 @@
 (use-package zig-mode)
 
 (use-package protobuf-mode)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(consult-eglot corfu dart-mode diff-hl dired disable-mouse dslide eat
+				   eglot-java ellama embark-consult epresent erlang
+				   expand-region flutter git-timemachine go-mode
+				   json-mode ledger-mode lua-mode magit marginalia
+				   markdown-mode ocaml-eglot ocamlformat orderless
+				   paredit pdf-tools protobuf-mode rainbow-mode
+				   rust-mode sbt-mode scala-mode sideline-flymake
+				   tuareg vertico yasnippet zig-mode zoom-window)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(outline-2 ((t (:inherit custom-state)))))
+;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
+(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+;; ## end of OPAM user-setup addition for emacs / base ## keep this line
