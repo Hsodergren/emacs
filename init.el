@@ -1,6 +1,10 @@
 ;; BACKUP FILES
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "saves"))))
 (setq backup-by-copying t)
+(package-initialize)
+
+(when (string-equal system-type "darwin")
+  (setq mac-command-modifier 'meta))
 
 (setq auth-sources '((:source "~/.authinfo.gpg")))
 
