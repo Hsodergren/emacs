@@ -39,7 +39,7 @@
   (setq-default tab-width 4)
   (setq ring-bell-function 'ignore)
   (dolist (path(list (string-join (list (getenv "HOME") "/bin"))))
-	(add-to-path path))
+    (add-to-path path))
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
   :config
   (scroll-bar-mode -1)
@@ -52,8 +52,8 @@
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'before-save-hook 'whitespace-cleanup)
   (add-hook `prog-mode-hook (lambda ()
-				  (whitespace-cleanup)
-				  (show-paren-mode)))
+                              (whitespace-cleanup)
+                              (show-paren-mode)))
   :custom-face
   (shadow ((t (:foreground "#707070"))))
   :bind
@@ -68,14 +68,14 @@
   :config
   (setq dired-listing-switches "-alh")
   (defun dired-kill-ring-save-path ()
-	(interactive)
-	(if-let ((path (dired-get-filename nil t)))
-		(kill-new path)))
+    (interactive)
+    (if-let ((path (dired-get-filename nil t)))
+        (kill-new path)))
 
   (defun dired-kill-ring-save-path-as-string ()
-	(interactive)
-	(if-let ((path (dired-get-filename nil t)))
-		(kill-new (format "\"%s\"" path)))))
+    (interactive)
+    (if-let ((path (dired-get-filename nil t)))
+        (kill-new (format "\"%s\"" path)))))
 
 
 (use-package rainbow-mode)
@@ -114,8 +114,8 @@
 (use-package orderless
   :init
   (setq completion-styles '(orderless basic)
-	completion-category-defaults nil
-	completion-category-overrides '((file (styles partial-completion)))))
+    completion-category-defaults nil
+    completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
   :ensure t
@@ -164,13 +164,13 @@
 (use-package eglot :ensure nil
   :config
   (setq-default eglot-workspace-configuration '(:gopls (:hints
-				(:assignVariableTypes t
-				 :compositeLiteralFields t
-				 :compositeLiteralTypes t
-				 :functionTypeParameters t
-				 :parameterNames t
-				 :rangeVariableTypes t)
-				:usePlaceholders t)))
+                (:assignVariableTypes t
+                 :compositeLiteralFields t
+                 :compositeLiteralTypes t
+                 :functionTypeParameters t
+                 :parameterNames t
+                 :rangeVariableTypes t)
+                :usePlaceholders t)))
   (setq eglot-stay-out-of '(imenu)))
 
 ;; PYTHON
@@ -188,17 +188,17 @@
 (use-package org
   :ensure nil
   :init
-  (setq org-default-notes-file "~/org/notes.org")
-  (setq org-directory "~/org/")
-  (setq org-agenda-files '("tasks.org" "calendar.org"))
+  (setq org-default-notes-file (file-name-concat user-emacs-directory "org" "notes.org"))
+  (setq org-directory (file-name-concat user-emacs-directory "org"))
+  (setq org-agenda-files '("todo.org"))
   (setq org-capture-templates
-		`(("t" "Task" entry (file "tasks.org")
-		   "* TODO %? %^g")
-		  ("c" "Calendar item")
-		  ("cs" "Single (Single day event" entry (file "calendar.org")
-		   "* %? \n%^t")
-		  ("cr" "Range (Multiple day event)" entry (file "calendar.org")
-		   "* %? \n%^{From:}t--%^{To:}t")))
+        `(("t" "Task" entry (file "todo.org")
+           "* TODO %? %^g")
+          ("c" "Calendar item")
+          ("cs" "Single (Single day event)" entry (file "calendar.org")
+           "* %? \n%^t")
+          ("cr" "Range (Multiple day event)" entry (file "calendar.org")
+           "* %? \n%^{From:}t--%^{To:}t")))
   (setq calendar-week-start-day 1)
   :config
   (auto-fill-mode)
@@ -210,10 +210,10 @@
 (use-package ledger-mode
   :config
   (setq ledger-reports
-		'(("bal" "%(binary) -f %(ledger-file) bal --no-color")
-		  ("reg" "%(binary) -f %(ledger-file) reg --no-color")
-		  ("payee" "%(binary) -f %(ledger-file) reg @%(payee) --no-color")
-		  ("account" "%(binary) -f %(ledger-file) reg %(account) --no-color")))
+        '(("bal" "%(binary) -f %(ledger-file) bal --no-color")
+          ("reg" "%(binary) -f %(ledger-file) reg --no-color")
+          ("payee" "%(binary) -f %(ledger-file) reg @%(payee) --no-color")
+          ("account" "%(binary) -f %(ledger-file) reg %(account) --no-color")))
   :mode "\\.dat")
 
 (use-package eat)
@@ -226,8 +226,8 @@
   (setq eshell-visual-commands nil)
   :hook
   (eshell-mode . (lambda ()
-				   (set-face-foreground 'eshell-prompt "pink3")
-				   (eat-eshell-mode))))
+                   (set-face-foreground 'eshell-prompt "pink3")
+                   (eat-eshell-mode))))
 
 (use-package ellama)
 
@@ -238,7 +238,7 @@
 (use-package tuareg
   :init
   (add-hook 'tuareg-mode (lambda () (progn
-									  (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
+                                      (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
   :hook
   (tuareg-mode . eglot-ensure)
   (tuareg-mode . ocaml-eglot))
@@ -288,13 +288,13 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    '(consult-eglot corfu dart-mode diff-hl dired disable-mouse dslide eat
-				   eglot-java ellama embark-consult epresent erlang
-				   expand-region flutter git-timemachine go-mode
-				   json-mode ledger-mode lua-mode magit marginalia
-				   markdown-mode ocaml-eglot ocamlformat orderless
-				   paredit pdf-tools protobuf-mode rainbow-mode
-				   rust-mode sbt-mode scala-mode sideline-flymake
-				   tuareg vertico yasnippet zig-mode zoom-window)))
+                   eglot-java ellama embark-consult epresent erlang
+                   expand-region flutter git-timemachine go-mode
+                   json-mode ledger-mode lua-mode magit marginalia
+                   markdown-mode ocaml-eglot ocamlformat orderless
+                   paredit pdf-tools protobuf-mode rainbow-mode
+                   rust-mode sbt-mode scala-mode sideline-flymake
+                   tuareg vertico yasnippet zig-mode zoom-window)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
