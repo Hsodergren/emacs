@@ -46,6 +46,7 @@
   (menu-bar-mode -1)
   (setq inhibit-startup-screen t)
   (setq blink-cursor-mode nil)
+  (setq-default indent-tabs-mode nil)
   (tool-bar-mode -1)
   (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
   (global-set-key (kbd "C-c s v") (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
@@ -58,6 +59,8 @@
   (shadow ((t (:foreground "#707070"))))
   :bind
   ("M-o" . other-window))
+
+(use-package yaml-mode)
 
 (use-package disable-mouse
   :init
