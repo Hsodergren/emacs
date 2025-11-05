@@ -186,7 +186,9 @@
   :init
   (eglot-ensure))
 
-(use-package rust-mode)
+(use-package rust-mode
+  :init
+  (eglot-ensure))
 
 (use-package org
   :ensure nil
