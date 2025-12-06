@@ -2,8 +2,15 @@
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "saves"))))
 (setq backup-by-copying t)
 (package-initialize)
+(defun path-relative-to-user-home-directory (path)
+  (file-name-concat (getenv "HOME") path))
+
+(setq my-global-path-paths (list (path-relative-to-user-home-directory "bin")))
 
 (when (string-equal system-type "darwin")
+  (setq my-global-path-paths
+        (append my-global-path-paths
+                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/")))
   (setq mac-command-modifier 'meta))
 
 (setq auth-sources '((:source "~/.authinfo.gpg")))
@@ -34,31 +41,41 @@
 (use-package emacs
   :init
   (require 'em-tramp)
-  (setq password-cache t)
-  (setq password-cache-expiry 600)
+  (setq password-cache t
+        password-cache-expiry 600)
   (setq-default tab-width 4)
   (setq ring-bell-function 'ignore)
-  (dolist (path(list (string-join (list (getenv "HOME") "/bin"))))
+  (dolist (path my-global-path-paths)
     (add-to-path path))
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
   :config
   (scroll-bar-mode -1)
   (menu-bar-mode -1)
+  (tool-bar-mode -1)
   (setq inhibit-startup-screen t)
   (setq blink-cursor-mode nil)
   (setq-default indent-tabs-mode nil)
-  (tool-bar-mode -1)
-  (global-set-key (kbd "C-c e v") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
-  (global-set-key (kbd "C-c s v") (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
+  (setq-default fill-column 100)
+  (setq ispell-program-name "aspell"
+        ispell-extra-args '("--sug-mode=ultra"))
+
+  (when (display-graphic-p)
+    (global-set-key (kbd "C-x C-c")
+                    (lambda () (interactive) (message "killing emacs is always a bad idea... I won't allow it!"))))
+  (global-set-key (kbd "C-c e v")
+                  (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
+  (global-set-key (kbd "C-c s v")
+                  (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-  (add-hook 'before-save-hook 'whitespace-cleanup)
-  (add-hook `prog-mode-hook (lambda ()
-                              (whitespace-cleanup)
-                              (show-paren-mode)))
+  (add-hook `prog-mode-hook 'show-paren-mode)
+  (setq comment-auto-fill-only-comments t)
+  (add-hook 'prog-mode-hook 'auto-fill-mode)
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
   :custom-face
   (shadow ((t (:foreground "#707070"))))
   :bind
-  ("M-o" . other-window))
+  ("M-o" . 'other-window)
+  ("M-E" . 'eshell))
 
 (use-package yaml-mode)
 
@@ -99,11 +116,14 @@
   (setq yas-snippet-dirs '("~/.emacs.d/snippets")))
 
 (use-package markdown-mode
-  :ensure t)
+  :ensure t
+  :init
+  (auto-fill-mode))
 
 (use-package expand-region
   :ensure t
-  :bind ("C-=" . #'er/expand-region))
+  :bind
+  ("C-=" . #'er/expand-region))
 
 (use-package vertico
   :init
@@ -117,12 +137,13 @@
 (use-package orderless
   :init
   (setq completion-styles '(orderless basic)
-    completion-category-defaults nil
-    completion-category-overrides '((file (styles partial-completion)))))
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
   :ensure t
-  :bind ("C-." .#'embark-act))
+  :bind
+  ("C-." .#'embark-act))
 
 (use-package embark-consult)
 
@@ -141,8 +162,6 @@
   (keymap-set corfu-map "RET" #'corfu-send)
   (setq tab-always-indent t))
 
-
-;; bindings
 
 (use-package magit
   :config
@@ -174,7 +193,14 @@
                  :parameterNames t
                  :rangeVariableTypes t)
                 :usePlaceholders t)))
-  (setq eglot-stay-out-of '(imenu)))
+  (setq eglot-stay-out-of '(imenu))
+  :bind
+  ( :prefix-map eglot-prefix
+    :prefix "C-,"
+    ("a a" . 'eglot-code-actions)
+    ("a i" . 'eglot-code-action-organize-imports)
+    ("a q" . 'eglot-code-quickfix)
+    ("f" . 'eglot-format-buffer)))
 
 ;; PYTHON
 (use-package python
@@ -192,25 +218,31 @@
 
 (use-package org
   :ensure nil
-  :init
+  :config
+  (setq org-tags-column 80)
   (setq org-default-notes-file (file-name-concat user-emacs-directory "org" "notes.org"))
   (setq org-directory (file-name-concat user-emacs-directory "org"))
   (setq org-agenda-files '("todo.org"))
   (setq org-capture-templates
-        `(("t" "Task" entry (file "todo.org")
-           "* TODO %? %^g")
+        `(("t" "Task" entry (file+headline "todo.org" "Todo")
+           "* TODO %? %^g"
+           :prepend t
+           :empty-lines-after 1)
+          ("q" "Question" entry (file+headline "todo.org" "Questions")
+           "* UNANSWERED %? %^g"
+           :prepend t
+           :empty-lines-after 1)
           ("c" "Calendar item")
           ("cs" "Single (Single day event)" entry (file "calendar.org")
            "* %? \n%^t")
           ("cr" "Range (Multiple day event)" entry (file "calendar.org")
            "* %? \n%^{From:}t--%^{To:}t")))
   (setq calendar-week-start-day 1)
-  :config
-  (auto-fill-mode)
-  (setq fill-column 100)
   :bind
   (("C-c a" . 'org-agenda)
-   ("C-c c" . 'org-capture)))
+   ("C-c c" . 'org-capture))
+  :hook
+  (org-mode . auto-fill-mode))
 
 (use-package ledger-mode
   :config
@@ -227,15 +259,29 @@
   :config
   (add-to-list 'eshell-modules-list 'eshell-elecslash)
   (add-to-list 'eshell-modules-list 'eshell-tramp)
-
   (setq eshell-visual-commands nil)
+
+  (defun myeshell/find-exact-match (full-path match-p)
+    (let ((current-dir (file-name-nondirectory (directory-file-name full-path)))
+          (parent-dir (file-name-parent-directory full-path)))
+      (when parent-dir
+        (if (funcall match-p current-dir)
+            full-path
+          (myeshell/find-exact-match parent-dir match-p)))))
+
+  (defun eshell/cdd (arg)
+    (if-let ((path (or (myeshell/find-exact-match default-directory (lambda (dir) (string-equal arg dir)))
+                       (myeshell/find-exact-match default-directory (lambda (dir) (string-match-p arg dir))))))
+        (eshell/cd path)
+      (error "Cannot find parent directory '%s'" arg)))
+
   :hook
   (eshell-mode . (lambda ()
                    (set-face-foreground 'eshell-prompt "pink3")
                    (eat-eshell-mode))))
 
 (use-package ellama)
-
+(use-package terraform-mode)
 (use-package ocamlformat
   :custom (ocamlformat-enable 'enable-outside-detected-project)
   :hook (before-save . ocamlformat-before-save))
