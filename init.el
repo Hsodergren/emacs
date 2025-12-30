@@ -77,7 +77,8 @@
   (shadow ((t (:foreground "#707070"))))
   :bind
   ("M-o" . 'other-window)
-  ("M-E" . 'eshell))
+  ("M-E" . 'eshell)
+  ("C-x C-b" . 'ibuffer))
 
 (use-package yaml-mode)
 
@@ -201,7 +202,7 @@
     :prefix "C-,"
     ("a a" . 'eglot-code-actions)
     ("a i" . 'eglot-code-action-organize-imports)
-    ("a q" . 'eglot-code-quickfix)
+    ("a q" . 'eglot-code-action-quickfix)
     ("f" . 'eglot-format-buffer)))
 
 ;; PYTHON
