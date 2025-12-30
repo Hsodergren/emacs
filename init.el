@@ -54,6 +54,8 @@
   (tool-bar-mode -1)
   (setq inhibit-startup-screen t)
   (setq blink-cursor-mode nil)
+  (setq split-width-threshold 160)
+  (setq split-height-threshold nil)
   (setq-default indent-tabs-mode nil)
   (setq-default fill-column 100)
   (setq ispell-program-name "aspell"
