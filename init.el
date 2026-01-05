@@ -319,7 +319,6 @@
   :bind
   ("M-E" . 'toggle-eshell-window))
 
-(use-package ellama)
 (use-package terraform-mode)
 (use-package ocamlformat
   :custom (ocamlformat-enable 'enable-outside-detected-project)
