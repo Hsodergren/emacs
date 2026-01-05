@@ -50,12 +50,14 @@
       (gruber-darker-bg+2      "#453d41")
       (gruber-darker-bg+3      "#484848")
       (gruber-darker-bg+4      "#52494e")
+      (gruber-darker-bg+5      "#707070")
       (gruber-darker-red-1     "#c73c3f")
       (gruber-darker-red       "#f43841")
       (gruber-darker-red+1     "#ff4f58")
       (gruber-darker-green     "#73c936")
       (gruber-darker-yellow    "#ffdd33")
       (gruber-darker-brown     "#cc8c3c")
+      (gruber-darker-prompt    "#b576b8")
       (gruber-darker-quartz    "#95a99f")
       (gruber-darker-niagara-2 "#303540")
       (gruber-darker-niagara-1 "#565f73")
@@ -95,12 +97,12 @@
    `(default ((t ,(list :foreground gruber-darker-fg
                         :background gruber-darker-bg))))
    `(fringe ((t ,(list :background nil
-                       :foreground gruber-darker-bg+2))))
+                       :foreground gruber-darker-bg+4))))
    `(vertical-border ((t ,(list :foreground gruber-darker-bg+2))))
    `(link ((t (:foreground ,gruber-darker-niagara :underline t))))
    `(link-visited ((t (:foreground ,gruber-darker-wisteria :underline t))))
    `(match ((t (:background ,gruber-darker-bg+4))))
-   `(shadow ((t (:foreground ,gruber-darker-bg+4))))
+   `(shadow ((t (:foreground ,gruber-darker-bg+5))))
    `(minibuffer-prompt ((t (:foreground ,gruber-darker-niagara))))
    `(region ((t (:background ,gruber-darker-bg+3 :foreground nil))))
    `(secondary-selection ((t ,(list :background gruber-darker-bg+3
@@ -173,6 +175,7 @@
    `(eshell-ls-directory ((t (:foreground ,gruber-darker-niagara))))
    `(eshell-ls-executable ((t (:foreground ,gruber-darker-green))))
    `(eshell-ls-symlink ((t (:foreground ,gruber-darker-yellow))))
+   `(eshell-prompt ((t (:foreground ,gruber-darker-prompt :weight bold))))
 
    ;; Font Lock
    `(font-lock-builtin-face ((t (:foreground ,gruber-darker-yellow))))
@@ -268,7 +271,7 @@
 
    ;; line numbers
    `(line-number ((t (:inherit default :foreground ,gruber-darker-bg+4))))
-   `(line-number-current-line ((t (:inherit line-number :foreground ,gruber-darker-yellow))))
+   `(line-number-current-line ((t (:inherit line-number :foreground ,gruber-darker-niagara))))
 
    ;; Linum
    `(linum ((t `(list :foreground gruber-darker-quartz
@@ -329,8 +332,8 @@
    `(sh-quoted-exec ((t (:foreground ,gruber-darker-red+1))))
 
    ;; Show Paren
-   `(show-paren-match-face ((t (:background ,gruber-darker-bg+4))))
-   `(show-paren-mismatch-face ((t (:background ,gruber-darker-red-1))))
+   `(show-paren-match ((t (:background ,gruber-darker-niagara-1))))
+   `(show-paren-mismatch ((t (:background ,gruber-darker-red-1))))
 
    ;; Slime
    `(slime-repl-inputed-output-face ((t (:foreground ,gruber-darker-red))))
@@ -401,12 +404,6 @@
 
    ;; Proof General
    `(proof-locked-face ((t (:background ,gruber-darker-niagara-2))))
-
-   ;; Orderless
-   `(orderless-match-face-0 ((t (:foreground ,gruber-darker-yellow))))
-   `(orderless-match-face-1 ((t (:foreground ,gruber-darker-green))))
-   `(orderless-match-face-2 ((t (:foreground ,gruber-darker-brown))))
-   `(orderless-match-face-3 ((t (:foreground ,gruber-darker-quartz))))
    ))
 
 ;;;###autoload

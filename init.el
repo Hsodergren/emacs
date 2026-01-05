@@ -1,4 +1,4 @@
-;; BACKUP FILES
+
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "saves"))))
 (setq backup-by-copying t)
 (package-initialize)
@@ -24,23 +24,20 @@
   (setq use-package-always-ensure t)
   (setq use-package-always-defer t))
 
-(use-package json-mode :ensure t)
-
-(use-package paredit :ensure t
-  :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode)
-  :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
-  :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
-
-(use-package gruber-darker-theme
-  :load-path "lib/gruber-darker-theme"
-  :ensure nil
-  :demand t
-  :config
-  (load-theme 'gruber-darker :no-confirm))
-
 (use-package emacs
   :init
   (require 'em-tramp)
+  (setq frame-resize-pixelwise t)
+  (when window-system
+    (if (> (/ (float  (x-display-pixel-width)) (x-display-pixel-height)) 2)
+        (setq default-frame-alist
+              `((top . 0) (left . ,(/ (x-display-pixel-width) 4))
+                (width . (text-pixels . ,(/ (x-display-pixel-width) 2)))
+                (height . (text-pixels . ,(x-display-pixel-height)))))
+      (setq default-frame-alist
+              `((top . 0) (left . 0)
+                (width . (text-pixels . ,(/ (x-display-pixel-width) 2)))
+                (height . (text-pixels . ,(x-display-pixel-height)))))))
   (setq password-cache t
         password-cache-expiry 600)
   (setq-default tab-width 4)
@@ -54,12 +51,31 @@
   (tool-bar-mode -1)
   (setq inhibit-startup-screen t)
   (setq blink-cursor-mode nil)
-  (setq split-width-threshold 160)
+  (setq split-width-threshold 200)
   (setq split-height-threshold nil)
+  (setq eldoc-print-after-edit t)
+  (setq eldoc-echo-area-prefer-doc-buffer t)
+  (setq-default imenu-flatten t)
   (setq-default indent-tabs-mode nil)
   (setq-default fill-column 100)
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
+
+  (setq display-buffer-alist
+        '(("*compilation*"
+           (display-buffer-in-side-window)
+           (side . bottom)
+           (window-height . 0.33)
+           (dedicated . t))
+          ("*eshell*"
+           (display-buffer-reuse-window display-buffer-in-side-window)
+           (side . bottom)
+           (window-height . 0.33)
+           (dedicated . t)
+           (window-parameters . ((no-other-window . t))))
+          ("*eldoc*"
+           (display-buffer-at-bottom)
+           (window-height . 10))))
 
   (when (display-graphic-p)
     (global-set-key (kbd "C-x C-c")
@@ -73,12 +89,18 @@
   (setq comment-auto-fill-only-comments t)
   (add-hook 'prog-mode-hook 'auto-fill-mode)
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
-  :custom-face
-  (shadow ((t (:foreground "#707070"))))
   :bind
   ("M-o" . 'other-window)
-  ("M-E" . 'eshell)
   ("C-x C-b" . 'ibuffer))
+
+(use-package json-mode
+  :ensure t)
+
+(use-package paredit
+  :ensure t
+  :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode)
+  :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
+  :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
 
 (use-package yaml-mode)
 
@@ -88,17 +110,17 @@
 
 (use-package dired
   :ensure nil
-  :config
-  (setq dired-listing-switches "-alh")
+  :preface
   (defun dired-kill-ring-save-path ()
     (interactive)
     (if-let ((path (dired-get-filename nil t)))
         (kill-new path)))
-
   (defun dired-kill-ring-save-path-as-string ()
     (interactive)
     (if-let ((path (dired-get-filename nil t)))
-        (kill-new (format "\"%s\"" path)))))
+        (kill-new (format "\"%s\"" path))))
+  :config
+  (setq dired-listing-switches "-alh"))
 
 
 (use-package rainbow-mode)
@@ -209,15 +231,18 @@
 (use-package python
   :ensure nil
   :init
-  (eglot-ensure))
+  :hook
+  (python-mode . eglot-ensure))
 
 (use-package go-mode
   :init
-  (eglot-ensure))
+  :hook
+  (go-mode . eglot-ensure))
 
 (use-package rust-mode
   :init
-  (eglot-ensure))
+  :hook
+  (rust-mode . eglot-ensure))
 
 (use-package org
   :ensure nil
@@ -257,13 +282,10 @@
   :mode "\\.dat")
 
 (use-package eat)
+
 (use-package eshell
   :demand t
-  :config
-  (add-to-list 'eshell-modules-list 'eshell-elecslash)
-  (add-to-list 'eshell-modules-list 'eshell-tramp)
-  (setq eshell-visual-commands nil)
-
+  :preface
   (defun myeshell/find-exact-match (full-path match-p)
     (let ((current-dir (file-name-nondirectory (directory-file-name full-path)))
           (parent-dir (file-name-parent-directory full-path)))
@@ -277,11 +299,25 @@
                        (myeshell/find-exact-match default-directory (lambda (dir) (string-match-p arg dir))))))
         (eshell/cd path)
       (error "Cannot find parent directory '%s'" arg)))
+  (defun toggle-eshell-window ()
+    (interactive)
+    (let ((buf (current-buffer)))
+      (if (and
+           (string= (buffer-name buf) "*eshell*"))
+          (when (window-parameter nil 'window-side)
+            (delete-window))
+        (eshell))))
+
+  :config
+  (add-to-list 'eshell-modules-list 'eshell-elecslash)
+  (add-to-list 'eshell-modules-list 'eshell-tramp)
+  (setq eshell-visual-commands nil)
 
   :hook
   (eshell-mode . (lambda ()
-                   (set-face-foreground 'eshell-prompt "pink3")
-                   (eat-eshell-mode))))
+                   (eat-eshell-mode)))
+  :bind
+  ("M-E" . 'toggle-eshell-window))
 
 (use-package ellama)
 (use-package terraform-mode)
@@ -334,6 +370,13 @@
 
 (use-package zig-mode)
 
+(use-package gruber-darker-theme
+  :load-path "lib/gruber-darker-theme"
+  :ensure nil
+  :demand t
+  :config
+  (load-theme 'gruber-darker :no-confirm))
+
 (use-package protobuf-mode)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -355,6 +398,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(outline-2 ((t (:inherit custom-state)))))
-;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
-(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit,
+;; but keep this line
+(when (file-exists-p "~/.emacs.d/opam-user-setup.el")
+  (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el"))
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line

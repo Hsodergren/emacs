@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: new Vec<> type
-# key: V
+# name: create a vec
+# key: v
 # --
-Vec<$1>$0
+vec![$1]$0
