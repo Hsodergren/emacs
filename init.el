@@ -129,8 +129,8 @@
   :config
   (setq dired-listing-switches "-alh"))
 
-
 (use-package rainbow-mode)
+
 (use-package sideline-flymake)
 (use-package sideline
   :config
@@ -235,7 +235,6 @@
    ("a q" . 'eglot-code-action-quickfix)
    ("f" . 'eglot-format-buffer)))
 
-;; PYTHON
 (use-package python
   :ensure nil
   :init
@@ -330,6 +329,7 @@
   ("M-E" . 'toggle-eshell-window))
 
 (use-package terraform-mode)
+
 (use-package ocamlformat
   :custom (ocamlformat-enable 'enable-outside-detected-project)
   :hook (before-save . ocamlformat-before-save))
@@ -346,9 +346,6 @@
   :ensure  t
   :after tuareg)
 
-
-;; DART
-;; To install dart_language_server run 'pub global activate dart_language_server'
 (use-package dart-mode
   :config
   (add-to-list 'exec-path (string-join (list (getenv "HOME") ".flutter" "bin") "/"))
@@ -360,9 +357,8 @@
 
 (use-package flutter)
 
-;; SCALA
 (use-package scala-mode)
-;; Enable sbt mode for executing sbt commands
+
 (use-package sbt-mode
   :commands sbt-start sbt-command
   :config
@@ -372,8 +368,7 @@
    'minibuffer-complete-word
    'self-insert-command
    minibuffer-local-completion-map)
-   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-   (setq sbt:program-options '("-Dsbt.supershell=false")))
+  (setq sbt:program-options '("-Dsbt.supershell=false")))
 
 (use-package erlang)
 
