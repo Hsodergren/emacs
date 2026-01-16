@@ -1,6 +1,4 @@
 
-(setq backup-directory-alist `(("." . ,(concat user-emacs-directory "saves"))))
-(setq backup-by-copying t)
 (package-initialize)
 (defun path-relative-to-user-home-directory (path)
   (file-name-concat (getenv "HOME") path))
@@ -10,7 +8,7 @@
 (when (string-equal system-type "darwin")
   (setq my-global-path-paths
         (append my-global-path-paths
-                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/")))
+                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/" "~/Library/Android/sdk/emulator")))
   (setq mac-command-modifier 'meta))
 
 (setq auth-sources '((:source "~/.authinfo.gpg")))
@@ -18,6 +16,9 @@
 (defun add-to-path (path)
   (add-to-list 'exec-path path)
   (setenv "PATH" (string-join (list (getenv "PATH") path) ":")))
+
+(setq custom-file (expand-file-name "customize.el" user-emacs-directory))
+(load custom-file 'noerror)
 
 (use-package use-package
   :init
@@ -45,6 +46,7 @@
   (dolist (path my-global-path-paths)
     (add-to-path path))
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
   :config
   (scroll-bar-mode -1)
   (menu-bar-mode -1)
@@ -55,6 +57,8 @@
   (setq split-height-threshold nil)
   (setq eldoc-print-after-edit t)
   (setq eldoc-echo-area-prefer-doc-buffer t)
+  (setq backup-directory-alist `(("." . ,(file-name-concat user-emacs-directory "saves"))))
+  (setq backup-by-copying t)
   (setq-default imenu-flatten t)
   (setq-default indent-tabs-mode nil)
   (setq-default fill-column 100)
@@ -62,28 +66,31 @@
         ispell-extra-args '("--sug-mode=ultra"))
 
   (setq display-buffer-alist
-        '(("*compilation*"
+        `((,(rx "*compilation*")
            (display-buffer-in-side-window)
            (side . bottom)
            (window-height . 0.33)
            (dedicated . t))
-          ("*eshell*"
+          (,(rx "*eshell*")
            (display-buffer-reuse-window display-buffer-in-side-window)
            (side . bottom)
            (window-height . 0.33)
            (dedicated . t)
            (window-parameters . ((no-other-window . t))))
-          ("*eldoc*"
+          (,(rx "*eldoc*")
            (display-buffer-at-bottom)
-           (window-height . 10))))
+           (window-height . 10))
+          (,(rx "*Flymake diagnostics " (* any) "*")
+           (display-buffer-at-bottom)
+           (window-height . 4))))
 
   (when (display-graphic-p)
     (global-set-key (kbd "C-x C-c")
                     (lambda () (interactive) (message "killing emacs is always a bad idea... I won't allow it!"))))
   (global-set-key (kbd "C-c e v")
-                  (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
+                  (lambda () (interactive) (find-file (file-name-concat user-emacs-directory "init.el"))))
   (global-set-key (kbd "C-c s v")
-                  (lambda () (interactive) (load-file "~/.emacs.d/init.el")))
+                  (lambda () (interactive) (load-file (file-name-concat user-emacs-directory "init.el"))))
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook `prog-mode-hook 'show-paren-mode)
   (setq comment-auto-fill-only-comments t)
@@ -138,7 +145,7 @@
 (use-package yasnippet
   :init
   (yas-global-mode)
-  (setq yas-snippet-dirs '("~/.emacs.d/snippets")))
+  (setq yas-snippet-dirs (file-name-concat user-emacs-directory "snippets")))
 
 (use-package markdown-mode
   :ensure t
@@ -163,7 +170,8 @@
   :init
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+        completion-category-overrides '((file (styles partial-completion)))
+        orderless-component-separator "[ ,]"))
 
 (use-package embark
   :ensure t
@@ -177,16 +185,15 @@
 
 (use-package corfu
   :custom
-  (corfu-separator ?\s)
-  (corfu-auto t)
-  (corfu-auto-delay 0.2)
-  (corfu-cycle t)
-  (corfu-preselect 'prompt)
+  (setq corfu-separator ?\s)
+  (setq corfu-auto t)
+  (setq corfu-auto-delay 0.2)
+  (setq corfu-cycle t)
+  (setq corfu-preselect 'prompt)
   :init
   (global-corfu-mode)
   (keymap-set corfu-map "RET" #'corfu-send)
   (setq tab-always-indent t))
-
 
 (use-package magit
   :config
@@ -220,12 +227,13 @@
                 :usePlaceholders t)))
   (setq eglot-stay-out-of '(imenu))
   :bind
-  ( :prefix-map eglot-prefix
-    :prefix "C-,"
-    ("a a" . 'eglot-code-actions)
-    ("a i" . 'eglot-code-action-organize-imports)
-    ("a q" . 'eglot-code-action-quickfix)
-    ("f" . 'eglot-format-buffer)))
+  (:prefix-map
+   eglot-prefix
+   :prefix "C-,"
+   ("a a" . 'eglot-code-actions)
+   ("a i" . 'eglot-code-action-organize-imports)
+   ("a q" . 'eglot-code-action-quickfix)
+   ("f" . 'eglot-format-buffer)))
 
 ;; PYTHON
 (use-package python
@@ -242,7 +250,9 @@
 (use-package rust-mode
   :init
   :hook
-  (rust-mode . eglot-ensure))
+  (rust-mode . eglot-ensure)
+  (rust-mode . (lambda ()
+                 (add-hook 'before-save-hook 'eglot-format-buffer nil t))))
 
 (use-package org
   :ensure nil
@@ -377,26 +387,7 @@
   (load-theme 'gruber-darker :no-confirm))
 
 (use-package protobuf-mode)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(consult-eglot corfu dart-mode diff-hl dired disable-mouse dslide eat
-                   eglot-java ellama embark-consult epresent erlang
-                   expand-region flutter git-timemachine go-mode
-                   json-mode ledger-mode lua-mode magit marginalia
-                   markdown-mode ocaml-eglot ocamlformat orderless
-                   paredit pdf-tools protobuf-mode rainbow-mode
-                   rust-mode sbt-mode scala-mode sideline-flymake
-                   tuareg vertico yasnippet zig-mode zoom-window)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(outline-2 ((t (:inherit custom-state)))))
+
 ;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit,
 ;; but keep this line
 (when (file-exists-p "~/.emacs.d/opam-user-setup.el")

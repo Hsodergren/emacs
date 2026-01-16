@@ -56,6 +56,7 @@
       (gruber-darker-red+1     "#ff4f58")
       (gruber-darker-green     "#73c936")
       (gruber-darker-yellow    "#ffdd33")
+      (gruber-darker-orange    "#f7af3b")
       (gruber-darker-brown     "#cc8c3c")
       (gruber-darker-prompt    "#b576b8")
       (gruber-darker-quartz    "#95a99f")
@@ -163,6 +164,9 @@
    `(egg-section-title ((t (:foreground ,gruber-darker-yellow))))
    `(egg-text-base ((t (:foreground ,gruber-darker-fg))))
    `(egg-term ((t (:foreground ,gruber-darker-yellow))))
+
+   ;; Eglot
+   `(eglot-highlight-symbol-face ((t (:foreground ,gruber-darker-orange :weight bold))))
 
    ;; ERC
    `(erc-notice-face ((t (:foreground ,gruber-darker-wisteria))))
