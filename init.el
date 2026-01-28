@@ -8,7 +8,7 @@
 (when (string-equal system-type "darwin")
   (setq my-global-path-paths
         (append my-global-path-paths
-                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/" "~/Library/Android/sdk/emulator")))
+                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/" "~/Library/Android/sdk/emulator" "/opt/homebrew/Cellar/tfenv/3.0.0/bin/")))
   (setq mac-command-modifier 'meta))
 
 (setq auth-sources '((:source "~/.authinfo.gpg")))
@@ -64,6 +64,10 @@
   (setq-default fill-column 100)
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
+  (advice-add 'other-window
+              :after
+              (lambda (&rest r)
+                (pulse-momentary-highlight-region (window-start) (window-end) 'pulse-highlight-face)))
 
   (setq display-buffer-alist
         `((,(rx "*compilation*")
@@ -95,6 +99,10 @@
   (add-hook `prog-mode-hook 'show-paren-mode)
   (setq comment-auto-fill-only-comments t)
   (add-hook 'prog-mode-hook 'auto-fill-mode)
+  (add-hook 'prog-mode-hook (lambda ()
+                              (font-lock-add-keywords
+                               nil
+                               '(("\\<\\(TODO\\|FIXME\\|HACK\\|NOTE\\|BUG\\):?" 1 font-lock-warning-face t)))))
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
   :bind
   ("M-o" . 'other-window)
@@ -102,6 +110,22 @@
 
 (use-package json-mode
   :ensure t)
+
+(use-package xref
+  :config
+  (advice-add 'xref-pulse-momentarily
+              :override
+              (lambda ()
+                (pcase-let ((`(,beg . ,end)
+                             (save-excursion
+                               (or
+                                (let ((length (xref-match-length xref-current-item)))
+                                  (and length (cons (point) (+ (point) length))))
+                                (back-to-indentation)
+                                (if (eolp)
+                                    (cons (line-beginning-position) (1+ (point)))
+                                  (cons (point) (line-end-position)))))))
+                  (pulse-momentary-highlight-region beg end 'pulse-highlight-face)))))
 
 (use-package paredit
   :ensure t
@@ -235,24 +259,6 @@
    ("a q" . 'eglot-code-action-quickfix)
    ("f" . 'eglot-format-buffer)))
 
-(use-package python
-  :ensure nil
-  :init
-  :hook
-  (python-mode . eglot-ensure))
-
-(use-package go-mode
-  :init
-  :hook
-  (go-mode . eglot-ensure))
-
-(use-package rust-mode
-  :init
-  :hook
-  (rust-mode . eglot-ensure)
-  (rust-mode . (lambda ()
-                 (add-hook 'before-save-hook 'eglot-format-buffer nil t))))
-
 (use-package org
   :ensure nil
   :config
@@ -328,7 +334,26 @@
   :bind
   ("M-E" . 'toggle-eshell-window))
 
-(use-package terraform-mode)
+(use-package python
+  :ensure nil
+  :init
+  :hook
+  (python-mode . eglot-ensure))
+
+(use-package go-mode
+  :init
+  :hook
+  (go-mode . eglot-ensure))
+
+(use-package rust-mode
+  :init
+  :hook
+  (rust-mode . eglot-ensure)
+  (rust-mode . (lambda ()
+                 (add-hook 'before-save-hook 'eglot-format-buffer nil t))))
+
+(use-package typescript-mode)
+
 
 (use-package ocamlformat
   :custom (ocamlformat-enable 'enable-outside-detected-project)
@@ -374,6 +399,8 @@
 
 (use-package zig-mode)
 
+(use-package terraform-mode)
+
 (use-package gruber-darker-theme
   :load-path "lib/gruber-darker-theme"
   :ensure nil
@@ -381,7 +408,21 @@
   :config
   (load-theme 'gruber-darker :no-confirm))
 
-(use-package protobuf-mode)
+
+(use-package protobuf-mode
+  :preface
+  (defun protobuf-insert-next-field-number (arg)
+    (interactive "P")
+    (let ((current-max 0))
+      (save-excursion
+        (beginning-of-buffer)
+        (while (search-forward-regexp (rx "=" (* space) (group (+ digit)) (* space) ";") nil t)
+          (setq current-max (max (string-to-number (match-string 1)) current-max))))
+      (if arg
+          (message "%s" current-max)
+        (insert (number-to-string (1+ current-max))))))
+  :hook
+  (protobuf-mode . (lambda () (setq c-basic-offset 4))))
 
 ;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit,
 ;; but keep this line
