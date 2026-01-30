@@ -26,6 +26,15 @@
   (setq use-package-always-defer t))
 
 (use-package emacs
+  :preface
+  (defun ansi-color-apply-on-buffer ()
+    (interactive)
+    (ansi-color-apply-on-region (point-min) (point-max)))
+
+  (defun flash-window (frame)
+    (let ((window (frame-selected-window frame)))
+      (when (windowp window)
+        (pulse-momentary-highlight-region (window-start) (window-end) 'pulse-highlight-face))))
   :init
   (require 'em-tramp)
   (setq frame-resize-pixelwise t)
@@ -64,10 +73,7 @@
   (setq-default fill-column 100)
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
-  (advice-add 'other-window
-              :after
-              (lambda (&rest r)
-                (pulse-momentary-highlight-region (window-start) (window-end) 'pulse-highlight-face)))
+  (add-hook 'window-selection-change-functions 'flash-window)
 
   (setq display-buffer-alist
         `((,(rx "*compilation*")
@@ -135,9 +141,7 @@
 
 (use-package yaml-mode)
 
-(use-package disable-mouse
-  :init
-  (global-disable-mouse-mode))
+(use-package disable-mouse)
 
 (use-package dired
   :ensure nil
@@ -314,6 +318,7 @@
                        (myeshell/find-exact-match default-directory (lambda (dir) (string-match-p arg dir))))))
         (eshell/cd path)
       (error "Cannot find parent directory '%s'" arg)))
+
   (defun toggle-eshell-window ()
     (interactive)
     (let ((buf (current-buffer)))
