@@ -35,6 +35,14 @@
     (let ((window (frame-selected-window frame)))
       (when (windowp window)
         (pulse-momentary-highlight-region (window-start) (window-end) 'pulse-highlight-face))))
+
+  (defun scroll-up-half ()
+    (interactive)
+    (scroll-up (/ (window-height) 2)))
+
+  (defun scroll-down-half ()
+    (interactive)
+    (scroll-down (/ (window-height) 2)))
   :init
   (require 'em-tramp)
   (setq frame-resize-pixelwise t)
@@ -112,7 +120,9 @@
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
   :bind
   ("M-o" . 'other-window)
-  ("C-x C-b" . 'ibuffer))
+  ("C-x C-b" . 'ibuffer)
+  ("C-v" . 'scroll-up-half)
+  ("M-v" . 'scroll-down-half))
 
 (use-package json-mode
   :ensure t)
