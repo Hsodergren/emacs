@@ -33,7 +33,7 @@
 
   (defun flash-window (frame)
     (let ((window (frame-selected-window frame)))
-      (when (windowp window)
+      (unless (minibufferp (window-buffer window))
         (pulse-momentary-highlight-region (window-start) (window-end) 'pulse-highlight-face))))
 
   (defun scroll-up-half ()
