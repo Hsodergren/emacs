@@ -27,6 +27,13 @@
 
 (use-package emacs
   :preface
+  (defun load-work-file ()
+    (load-file-if-exists (file-name-concat user-emacs-directory "work.el")))
+
+  (defun load-file-if-exists (file)
+    (when (file-exists-p file)
+      (load-file file)))
+
   (defun ansi-color-apply-on-buffer ()
     (interactive)
     (ansi-color-apply-on-region (point-min) (point-max)))
@@ -118,6 +125,7 @@
                                nil
                                '(("\\<\\(TODO\\|FIXME\\|HACK\\|NOTE\\|BUG\\):?" 1 font-lock-warning-face t)))))
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
+  (add-hook 'after-init-hook 'load-work-file)
   :bind
   ("M-o" . 'other-window)
   ("C-x C-b" . 'ibuffer)
