@@ -8,7 +8,7 @@
 (when (string-equal system-type "darwin")
   (setq my-global-path-paths
         (append my-global-path-paths
-                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/" "~/Library/Android/sdk/emulator" "/opt/homebrew/Cellar/tfenv/3.0.0/bin/")))
+                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/" "~/Library/Android/sdk/emulator" "/opt/homebrew/Cellar/tfenv/3.0.0/bin/" "/Users/henrik.sdergren/Library/Python/3.9/bin")))
   (setq mac-command-modifier 'meta))
 
 (setq auth-sources '((:source "~/.authinfo.gpg")))
