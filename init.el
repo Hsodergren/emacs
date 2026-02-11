@@ -373,9 +373,7 @@
 (use-package rust-mode
   :init
   :hook
-  (rust-mode . eglot-ensure)
-  (rust-mode . (lambda ()
-                 (add-hook 'before-save-hook 'eglot-format-buffer nil t))))
+  (rust-mode . eglot-ensure))
 
 (use-package typescript-mode)
 
