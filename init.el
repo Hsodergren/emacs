@@ -43,13 +43,15 @@
       (unless (minibufferp (window-buffer window))
         (pulse-momentary-highlight-region (window-start) (window-end) 'pulse-highlight-face))))
 
-  (defun scroll-up-half ()
-    (interactive)
-    (scroll-up (/ (window-height) 2)))
+  (defmacro create-scroll-fn (name fn)
+    `(defun ,name ()
+       (interactive)
+       (let ((lines-from-top (count-screen-lines (window-start) (point))))
+         (,fn (/ (window-height) 2))
+         (move-to-window-line lines-from-top))))
+  (create-scroll-fn scroll-up-half scroll-up)
+  (create-scroll-fn scroll-down-half scroll-down)
 
-  (defun scroll-down-half ()
-    (interactive)
-    (scroll-down (/ (window-height) 2)))
   :init
   (require 'em-tramp)
   (setq frame-resize-pixelwise t)
