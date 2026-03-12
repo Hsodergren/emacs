@@ -393,6 +393,16 @@
    `(term-color-cyan ((t (:foreground ,gruber-darker-quartz :background ,gruber-darker-quartz))))
    `(term-color-white ((t (:foreground ,gruber-darker-fg :background ,gruber-darker-white))))
 
+    ;; ansi-term
+   `(ansi-color-black ((t (:foreground ,gruber-darker-bg+3 :background ,gruber-darker-bg+4))))
+   `(ansi-color-red ((t (:foreground ,gruber-darker-red-1 :background ,gruber-darker-red-1))))
+   `(ansi-color-green ((t (:foreground ,gruber-darker-green :background ,gruber-darker-green))))
+   `(ansi-color-blue ((t (:foreground ,gruber-darker-niagara :background ,gruber-darker-niagara))))
+   `(ansi-color-yellow ((t (:foreground ,gruber-darker-yellow :background ,gruber-darker-yellow))))
+   `(ansi-color-magenta ((t (:foreground ,gruber-darker-wisteria :background ,gruber-darker-wisteria))))
+   `(ansi-color-cyan ((t (:foreground ,gruber-darker-quartz :background ,gruber-darker-quartz))))
+   `(ansi-color-white ((t (:foreground ,gruber-darker-fg :background ,gruber-darker-white))))
+
    ;; company-mode
    `(company-tooltip ((t (:foreground ,gruber-darker-fg :background ,gruber-darker-bg+1))))
    `(company-tooltip-annotation ((t (:foreground ,gruber-darker-brown :background ,gruber-darker-bg+1))))

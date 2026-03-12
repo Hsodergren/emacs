@@ -1,24 +1,4 @@
-
 (package-initialize)
-(defun path-relative-to-user-home-directory (path)
-  (file-name-concat (getenv "HOME") path))
-
-(setq my-global-path-paths (list (path-relative-to-user-home-directory "bin")))
-
-(when (string-equal system-type "darwin")
-  (setq my-global-path-paths
-        (append my-global-path-paths
-                '("/opt/homebrew/lib/ruby/gems/3.4.0/bin/" "~/Library/Android/sdk/platform-tools/" "~/Library/Android/sdk/emulator" "/opt/homebrew/Cellar/tfenv/3.0.0/bin/" "/Users/henrik.sdergren/Library/Python/3.9/bin")))
-  (setq mac-command-modifier 'meta))
-
-(setq auth-sources '((:source "~/.authinfo.gpg")))
-
-(defun add-to-path (path)
-  (add-to-list 'exec-path path)
-  (setenv "PATH" (string-join (list (getenv "PATH") path) ":")))
-
-(setq custom-file (expand-file-name "customize.el" user-emacs-directory))
-(load custom-file 'noerror)
 
 (use-package use-package
   :init
@@ -52,7 +32,32 @@
   (create-scroll-fn scroll-up-half scroll-up)
   (create-scroll-fn scroll-down-half scroll-down)
 
+  (defun path-relative-to-user-home-directory (path)
+    (file-name-concat (getenv "HOME") path))
+
+  (defun add-to-path (path)
+    (add-to-list 'exec-path path)
+    (setenv "PATH" (string-join (list (getenv "PATH") path) ":")))
+
+  (defun my/add-todo-comment ()
+    (interactive)
+    (comment-indent)
+    (insert "TODO: "))
+
   :init
+  (load-work-file)
+  (setq my-global-path-paths (list (path-relative-to-user-home-directory "bin")))
+
+  (when (string-equal system-type "darwin")
+    (setq my-global-path-paths
+          (append my-global-path-paths work-paths))
+    (setq mac-command-modifier 'meta))
+
+  (setq auth-sources '((:source "~/.authinfo.gpg")))
+
+  (setq custom-file (expand-file-name "customize.el" user-emacs-directory))
+  (load custom-file 'noerror)
+
   (require 'em-tramp)
   (setq frame-resize-pixelwise t)
   (when window-system
@@ -94,7 +99,7 @@
 
   (setq display-buffer-alist
         `((,(rx "*compilation*")
-           (display-buffer-in-side-window)
+           (display-buffer-reuse-window display-buffer-in-side-window)
            (side . bottom)
            (window-height . 0.33)
            (dedicated . t))
@@ -132,7 +137,9 @@
   ("M-o" . 'other-window)
   ("C-x C-b" . 'ibuffer)
   ("C-v" . 'scroll-up-half)
-  ("M-v" . 'scroll-down-half))
+  ("M-v" . 'scroll-down-half)
+  ("M-g i" . 'consult-imenu)
+  ("C-M-;" . 'my/add-todo-comment))
 
 (use-package json-mode
   :ensure t)
@@ -226,6 +233,10 @@
   :bind
   ("C-." .#'embark-act))
 
+(use-package consult
+  :custom
+  (setq consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip --hidden --glob !.git/**"))
+
 (use-package embark-consult)
 
 (use-package consult-eglot
@@ -281,7 +292,9 @@
    ("a a" . 'eglot-code-actions)
    ("a i" . 'eglot-code-action-organize-imports)
    ("a q" . 'eglot-code-action-quickfix)
-   ("f" . 'eglot-format-buffer)))
+   ("f" . 'eglot-format-buffer)
+   ("r" . 'eglot-rename)
+   ("t" . 'eglot-find-typeDefinition)))
 
 (use-package org
   :ensure nil
@@ -307,7 +320,8 @@
   (setq calendar-week-start-day 1)
   :bind
   (("C-c a" . 'org-agenda)
-   ("C-c c" . 'org-capture))
+   ("C-c c" . 'org-capture)
+   ("C-c l" . 'org-store-link))
   :hook
   (org-mode . auto-fill-mode))
 
