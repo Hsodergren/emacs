@@ -101,11 +101,13 @@
         `((,(rx "*compilation*")
            (display-buffer-reuse-window display-buffer-in-side-window)
            (side . bottom)
+           (slot . 1)
            (window-height . 0.33)
            (dedicated . t))
           (,(rx "*eshell*")
            (display-buffer-reuse-window display-buffer-in-side-window)
            (side . bottom)
+           (slot . 0)
            (window-height . 0.33)
            (dedicated . t)
            (window-parameters . ((no-other-window . t))))
@@ -231,11 +233,13 @@
 (use-package embark
   :ensure t
   :bind
-  ("C-." .#'embark-act))
+  ("C-." . #'embark-act))
 
 (use-package consult
   :custom
-  (setq consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip --hidden --glob !.git/**"))
+  (setq consult-ripgrep-args "rg --null --line-buffered --color=never --max-columns=1000 --path-separator /   --smart-case --no-heading --with-filename --line-number --search-zip --hidden --glob !.git/**")
+  :bind
+  ("C-c C-r" . consult-ripgrep))
 
 (use-package embark-consult)
 
@@ -294,7 +298,8 @@
    ("a q" . 'eglot-code-action-quickfix)
    ("f" . 'eglot-format-buffer)
    ("r" . 'eglot-rename)
-   ("t" . 'eglot-find-typeDefinition)))
+   ("t" . 'eglot-find-typeDefinition)
+   ("c" . 'recompile)))
 
 (use-package org
   :ensure nil
@@ -353,14 +358,18 @@
         (eshell/cd path)
       (error "Cannot find parent directory '%s'" arg)))
 
-  (defun toggle-eshell-window ()
-    (interactive)
+  (defun toggle-eshell-window (arg)
+    (interactive "P")
     (let ((buf (current-buffer)))
       (if (and
            (string= (buffer-name buf) "*eshell*"))
           (when (window-parameter nil 'window-side)
             (delete-window))
-        (eshell))))
+        (let ((dir default-directory))
+          (eshell)
+          (when arg
+            (eshell/cd dir)
+            (eshell-reset))))))
 
   :config
   (add-to-list 'eshell-modules-list 'eshell-elecslash)
