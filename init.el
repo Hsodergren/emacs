@@ -93,8 +93,26 @@
   (setq-default imenu-flatten t)
   (setq-default indent-tabs-mode nil)
   (setq-default fill-column 100)
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
+  (setq vc-git-diff-switches '("-U7"))
+  (setq vc-git-log-switches '("--decorate" "--graph" "--oneline"))
+  (keymap-unset diff-mode-map "M-o")
+  (setq compilation-scroll-output 'first-error)
+  (setq compilation-always-kill t)
+
+  (defun my-colorize-compilation-buffer ()
+    (ansi-color-apply-on-region compilation-filter-start (point)))
+
+  (add-hook 'compilation-filter-hook #'my-colorize-compilation-buffer)
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(rust-panic
+                 "panicked at \\([^:\n]+\\):\\([0-9]+\\):\\([0-9]+\\)"
+                 1 2 3))
+
+  (add-to-list 'compilation-error-regexp-alist 'rust-panic)
+
   (add-hook 'window-selection-change-functions 'flash-window)
 
   (setq display-buffer-alist
@@ -111,9 +129,6 @@
            (window-height . 0.33)
            (dedicated . t)
            (window-parameters . ((no-other-window . t))))
-          (,(rx "*eldoc*")
-           (display-buffer-at-bottom)
-           (window-height . 10))
           (,(rx "*Flymake diagnostics " (* any) "*")
            (display-buffer-at-bottom)
            (window-height . 4))))
@@ -339,7 +354,9 @@
           ("account" "%(binary) -f %(ledger-file) reg %(account) --no-color")))
   :mode "\\.dat")
 
-(use-package eat)
+(use-package eat
+  :config
+  (setq eat-term-scrollback-size (* 1024 1024)))
 
 (use-package eshell
   :demand t

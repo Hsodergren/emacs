@@ -54,7 +54,11 @@
       (gruber-darker-red-1     "#c73c3f")
       (gruber-darker-red       "#f43841")
       (gruber-darker-red+1     "#ff4f58")
+      (gruber-darker-red-muted "#441111")
+      (gruber-darker-red-muted+1 "#663333")
       (gruber-darker-green     "#73c936")
+      (gruber-darker-green-muted "#113311")
+      (gruber-darker-green-muted+1 "#336633")
       (gruber-darker-yellow    "#ffdd33")
       (gruber-darker-orange    "#f7af3b")
       (gruber-darker-brown     "#cc8c3c")
@@ -137,10 +141,11 @@
    `(custom-state ((t (:foreground ,gruber-darker-green))))
 
    ;; Diff
-   `(diff-removed ((t ,(list :foreground gruber-darker-red+1
-                             :background nil))))
-   `(diff-added ((t ,(list :foreground gruber-darker-green
-                           :background nil))))
+   `(diff-removed ((t ,(list :background gruber-darker-red-muted))))
+   `(diff-refine-removed ((t ,(list :background gruber-darker-red-muted+1))))
+   `(diff-added ((t ,(list :background gruber-darker-green-muted))))
+   `(diff-refine-added ((t ,(list :background gruber-darker-green-muted+1))))
+   `(diff-header ((t ,(list :background gruber-darker-bg+2))))
 
    ;; Dired
    `(dired-directory ((t (:foreground ,gruber-darker-niagara :weight bold))))
@@ -396,12 +401,16 @@
     ;; ansi-term
    `(ansi-color-black ((t (:foreground ,gruber-darker-bg+3 :background ,gruber-darker-bg+4))))
    `(ansi-color-red ((t (:foreground ,gruber-darker-red-1 :background ,gruber-darker-red-1))))
+   `(ansi-color-red2 ((t (:foreground ,gruber-darker-red-1 :background ,gruber-darker-red-1))))
    `(ansi-color-green ((t (:foreground ,gruber-darker-green :background ,gruber-darker-green))))
    `(ansi-color-blue ((t (:foreground ,gruber-darker-niagara :background ,gruber-darker-niagara))))
+   `(ansi-color-blue1 ((t (:foreground ,gruber-darker-niagara :background ,gruber-darker-niagara))))
    `(ansi-color-yellow ((t (:foreground ,gruber-darker-yellow :background ,gruber-darker-yellow))))
    `(ansi-color-magenta ((t (:foreground ,gruber-darker-wisteria :background ,gruber-darker-wisteria))))
    `(ansi-color-cyan ((t (:foreground ,gruber-darker-quartz :background ,gruber-darker-quartz))))
    `(ansi-color-white ((t (:foreground ,gruber-darker-fg :background ,gruber-darker-white))))
+
+   `(eat-term-color-4 ((t (:foreground ,gruber-darker-niagara))))
 
    ;; company-mode
    `(company-tooltip ((t (:foreground ,gruber-darker-fg :background ,gruber-darker-bg+1))))
