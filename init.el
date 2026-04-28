@@ -90,29 +90,12 @@
   (setq eldoc-echo-area-prefer-doc-buffer t)
   (setq backup-directory-alist `(("." . ,(file-name-concat user-emacs-directory "saves"))))
   (setq backup-by-copying t)
-  (setq-default imenu-flatten t)
+  (setq help-window-select t)
   (setq-default indent-tabs-mode nil)
   (setq-default fill-column 100)
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
-  (setq vc-git-diff-switches '("-U7"))
-  (setq vc-git-log-switches '("--decorate" "--graph" "--oneline"))
-  (keymap-unset diff-mode-map "M-o")
-  (setq compilation-scroll-output 'first-error)
-  (setq compilation-always-kill t)
-
-  (defun my-colorize-compilation-buffer ()
-    (ansi-color-apply-on-region compilation-filter-start (point)))
-
-  (add-hook 'compilation-filter-hook #'my-colorize-compilation-buffer)
-  (add-to-list 'compilation-error-regexp-alist-alist
-               '(rust-panic
-                 "panicked at \\([^:\n]+\\):\\([0-9]+\\):\\([0-9]+\\)"
-                 1 2 3))
-
-  (add-to-list 'compilation-error-regexp-alist 'rust-panic)
-
   (add-hook 'window-selection-change-functions 'flash-window)
 
   (setq display-buffer-alist
@@ -156,10 +139,54 @@
   ("C-v" . 'scroll-up-half)
   ("M-v" . 'scroll-down-half)
   ("M-g i" . 'consult-imenu)
-  ("C-M-;" . 'my/add-todo-comment))
+  ("C-M-;" . 'my/add-todo-comment)
+  ("M-/" . 'dabbrev-expand))
+
+
+(use-package vc
+  :preface
+  (defun log-view-diff-save-excursion ()
+    (interactive)
+    (save-excursion)
+    (let ((cur-win (selected-window)))
+      (call-interactively #'log-view-diff)
+      (select-window cur-win)))
+  :config
+  (setq vc-git-diff-switches '("-U7"))
+  (setq vc-git-log-switches '("--decorate" "--graph" "--format=medium")))
+  ;; :bind (:map vc-git-log-view-mode-map
+  ;;             ("o" . #'log-view-diff-save-excursion)))
 
 (use-package json-mode
   :ensure t)
+
+(use-package diff-mode
+  :config
+  (keymap-unset diff-mode-map "M-o"))
+
+(use-package compile
+  :ensure nil
+  :config
+  (setq compilation-scroll-output 'first-error)
+  (setq compilation-always-kill t)
+  (setq compilation-environment nil)
+
+  (defun my-colorize-compilation-buffer ()
+    (ansi-color-apply-on-region compilation-filter-start (point)))
+
+  (add-hook 'compilation-filter-hook #'my-colorize-compilation-buffer)
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(rust-panic
+                 "panicked at \\([^:\n]+\\):\\([0-9]+\\):\\([0-9]+\\)"
+                 1 2 3))
+
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(rust-insta-snapshot
+                 "Source: \\([^:\n]+\\):\\([0-9]+\\)"
+                 1 2 2))
+
+  (add-to-list 'compilation-error-regexp-alist 'rust-panic)
+  (add-to-list 'compilation-error-regexp-alist 'rust-insta-snapshot))
 
 (use-package xref
   :config
@@ -304,6 +331,10 @@
                  :rangeVariableTypes t)
                 :usePlaceholders t)))
   (setq eglot-stay-out-of '(imenu))
+  (setq eglot-code-action-indicator "")
+  :hook
+  (eglot-managed-mode . (lambda ()
+                          (eglot-semantic-tokens-mode -1)))
   :bind
   (:prefix-map
    eglot-prefix
@@ -411,9 +442,17 @@
   (go-mode . eglot-ensure))
 
 (use-package rust-mode
+  :defer t
   :init
+  (with-eval-after-load 'compile
+    (require 'rust-compile))
+  (defun rust-insert-backtrace-dbg ()
+    (interactive)
+    (insert "dbg!(&std::backtrace::Backtrace::force_capture());"))
   :hook
-  (rust-mode . eglot-ensure))
+  (rust-mode . eglot-ensure)
+  :bind
+  ("C-c C-b" . #'rust-insert-backtrace-dbg))
 
 (use-package typescript-mode)
 
