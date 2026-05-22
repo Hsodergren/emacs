@@ -1,4 +1,4 @@
-;;; gruber-darker-theme.el --- Gruber Darker color theme for Emacs 24.
+;;; gruber-darker-theme.el --- Gruber Darker color theme for Emacs 24.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013-2016 Alexey Kutepov a.k.a rexim
 ;; Copyright (C) 2009-2010 Jason R. Blevins
@@ -54,12 +54,13 @@
       (gruber-darker-red-1     "#c73c3f")
       (gruber-darker-red       "#f43841")
       (gruber-darker-red+1     "#ff4f58")
-      (gruber-darker-red-muted "#441111")
+      (gruber-darker-red-muted "#442222")
       (gruber-darker-red-muted+1 "#663333")
       (gruber-darker-green     "#73c936")
-      (gruber-darker-green-muted "#113311")
+      (gruber-darker-green-muted "#224422")
       (gruber-darker-green-muted+1 "#336633")
-      (gruber-darker-yellow    "#ffdd33")
+      (gruber-darker-yellow       "#ffdd33")
+      (gruber-darker-yellow-light "#ffffaa")
       (gruber-darker-orange    "#f7af3b")
       (gruber-darker-brown     "#cc8c3c")
       (gruber-darker-prompt    "#b576b8")
@@ -75,6 +76,23 @@
 
   (custom-theme-set-faces
    'gruber-darker
+
+
+   ;; Font Lock
+   `(font-lock-builtin-face ((t (:foreground ,gruber-darker-yellow))))
+   `(font-lock-comment-face ((t (:foreground ,gruber-darker-brown))))
+   `(font-lock-comment-delimiter-face ((t (:foreground ,gruber-darker-brown))))
+   `(font-lock-constant-face ((t (:foreground ,gruber-darker-quartz))))
+   `(font-lock-doc-face ((t (:foreground ,gruber-darker-green))))
+   `(font-lock-doc-string-face ((t (:foreground ,gruber-darker-green))))
+   `(font-lock-function-name-face ((t (:foreground ,gruber-darker-niagara))))
+   `(font-lock-keyword-face ((t (:foreground ,gruber-darker-yellow :bold t))))
+   `(font-lock-preprocessor-face ((t (:foreground ,gruber-darker-quartz))))
+   `(font-lock-reference-face ((t (:foreground ,gruber-darker-quartz))))
+   `(font-lock-string-face ((t (:foreground ,gruber-darker-green))))
+   `(font-lock-type-face ((t (:foreground ,gruber-darker-quartz))))
+   `(font-lock-variable-name-face ((t (:foreground ,gruber-darker-fg+1))))
+   `(font-lock-warning-face ((t (:foreground ,gruber-darker-red))))
 
    ;; Agda2
    `(agda2-highlight-datatype-face ((t (:foreground ,gruber-darker-quartz))))
@@ -138,7 +156,7 @@
    `(completions-annotations ((t (:inherit 'shadow))))
 
    ;; Custom
-   `(custom-state ((t (:foreground ,gruber-darker-green))))
+   `(custom-state ((t (:foreground ,gruber-darker-yellow-light))))
 
    ;; Diff
    `(diff-removed ((t ,(list :background gruber-darker-red-muted))))
@@ -146,6 +164,9 @@
    `(diff-added ((t ,(list :background gruber-darker-green-muted))))
    `(diff-refine-added ((t ,(list :background gruber-darker-green-muted+1))))
    `(diff-header ((t ,(list :background gruber-darker-bg+2))))
+   `(diff-function ((t ,(list :foreground gruber-darker-niagara
+                              :background gruber-darker-bg+2
+                              :weight 'bold))))
 
    ;; Dired
    `(dired-directory ((t (:foreground ,gruber-darker-niagara :weight bold))))
@@ -172,6 +193,11 @@
 
    ;; Eglot
    `(eglot-highlight-symbol-face ((t (:foreground ,gruber-darker-orange :weight bold))))
+   `(eglot-semantic-defaultLibrary ((t (:inherit ,font-lock-function-name-face))))
+   `(eglot-semantic-static ((t (:inherit ,font-lock-function-name-face))))
+   `(eglot-semantic-namespace ((t (:inherit ,font-lock-type-face))))
+   `(eglot-semantic-declaration ((t (:inherit ,font-lock-variable-name-face))))
+   `(eglot-semantic-operator ((t (:inherit ,font-lock-variable-name-face))))
 
    ;; ERC
    `(erc-notice-face ((t (:foreground ,gruber-darker-wisteria))))
@@ -185,22 +211,6 @@
    `(eshell-ls-executable ((t (:foreground ,gruber-darker-green))))
    `(eshell-ls-symlink ((t (:foreground ,gruber-darker-yellow))))
    `(eshell-prompt ((t (:foreground ,gruber-darker-prompt :weight bold))))
-
-   ;; Font Lock
-   `(font-lock-builtin-face ((t (:foreground ,gruber-darker-yellow))))
-   `(font-lock-comment-face ((t (:foreground ,gruber-darker-brown))))
-   `(font-lock-comment-delimiter-face ((t (:foreground ,gruber-darker-brown))))
-   `(font-lock-constant-face ((t (:foreground ,gruber-darker-quartz))))
-   `(font-lock-doc-face ((t (:foreground ,gruber-darker-green))))
-   `(font-lock-doc-string-face ((t (:foreground ,gruber-darker-green))))
-   `(font-lock-function-name-face ((t (:foreground ,gruber-darker-niagara))))
-   `(font-lock-keyword-face ((t (:foreground ,gruber-darker-yellow :bold t))))
-   `(font-lock-preprocessor-face ((t (:foreground ,gruber-darker-quartz))))
-   `(font-lock-reference-face ((t (:foreground ,gruber-darker-quartz))))
-   `(font-lock-string-face ((t (:foreground ,gruber-darker-green))))
-   `(font-lock-type-face ((t (:foreground ,gruber-darker-quartz))))
-   `(font-lock-variable-name-face ((t (:foreground ,gruber-darker-fg+1))))
-   `(font-lock-warning-face ((t (:foreground ,gruber-darker-red))))
 
    ;; Flymake
    `(flymake-errline

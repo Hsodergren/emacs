@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (package-initialize)
 
 (use-package use-package
@@ -7,6 +8,26 @@
 
 (use-package emacs
   :preface
+  (defun only-window-side-window ()
+    (interactive)
+    (let ((buffer (current-buffer)))
+      (if (not (window-parameter (selected-window) 'window-side))
+          (delete-other-windows)
+        (delete-window)
+        (delete-other-windows)
+        (switch-to-buffer buffer))))
+
+  (defun count-lines-region (beg end)
+    (interactive "r")
+    (let ((end-at-newline (char-equal (char-before end) ?\n))
+          (lines  (- (line-number-at-pos end) (line-number-at-pos beg))))
+      (message "Number of lines: %d"  (+ lines (if end-at-newline 0 1)))))
+
+  (defun repeatize (keymap)
+    (map-keymap (lambda (_kbd cmd)
+                  (put cmd 'repeat-map keymap))
+                keymap))
+
   (defun load-work-file ()
     (load-file-if-exists (file-name-concat user-emacs-directory "work.el")))
 
@@ -37,7 +58,7 @@
 
   (defun add-to-path (path)
     (add-to-list 'exec-path path)
-    (setenv "PATH" (string-join (list (getenv "PATH") path) ":")))
+    (setenv "PATH" (string-join exec-path path-separator)))
 
   (defun my/add-todo-comment ()
     (interactive)
@@ -46,9 +67,9 @@
 
   :init
   (load-work-file)
-  (setq my-global-path-paths (list (path-relative-to-user-home-directory "bin")))
+  (setq my-global-path-paths (list "~/bin" "~/.local/bin"))
 
-  (when (string-equal system-type "darwin")
+  (when (eq system-type 'darwin)
     (setq my-global-path-paths
           (append my-global-path-paths work-paths))
     (setq mac-command-modifier 'meta))
@@ -75,7 +96,7 @@
   (setq-default tab-width 4)
   (setq ring-bell-function 'ignore)
   (dolist (path my-global-path-paths)
-    (add-to-path path))
+    (add-to-path (expand-file-name path)))
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
   :config
@@ -126,7 +147,6 @@
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook `prog-mode-hook 'show-paren-mode)
   (setq comment-auto-fill-only-comments t)
-  (add-hook 'prog-mode-hook 'auto-fill-mode)
   (add-hook 'prog-mode-hook (lambda ()
                               (font-lock-add-keywords
                                nil
@@ -142,6 +162,12 @@
   ("C-M-;" . 'my/add-todo-comment)
   ("M-/" . 'dabbrev-expand))
 
+(use-package repeat
+  :init
+  (repeat-mode))
+
+(use-package js
+  :mode ((rx (or ".morpheme" ".js") eos) . javascript-mode))
 
 (use-package vc
   :preface
@@ -153,9 +179,11 @@
       (select-window cur-win)))
   :config
   (setq vc-git-diff-switches '("-U7"))
-  (setq vc-git-log-switches '("--decorate" "--graph" "--format=medium")))
-  ;; :bind (:map vc-git-log-view-mode-map
-  ;;             ("o" . #'log-view-diff-save-excursion)))
+  (setq vc-git-log-switches '("--decorate" "--graph" "--format=medium"))
+  (setq vc-dir-allow-mass-mark-changes t))
+
+;; :bind (:map vc-git-log-view-mode-map
+;;             ("o" . #'log-view-diff-save-excursion)))
 
 (use-package json-mode
   :ensure t)
@@ -331,7 +359,7 @@
                  :rangeVariableTypes t)
                 :usePlaceholders t)))
   (setq eglot-stay-out-of '(imenu))
-  (setq eglot-code-action-indicator "")
+  (setq eglot-code-action-indications nil)
   :hook
   (eglot-managed-mode . (lambda ()
                           (eglot-semantic-tokens-mode -1)))
@@ -349,7 +377,18 @@
 
 (use-package org
   :ensure nil
+  :init
+  (setq org-repeat-map
+        (define-keymap
+          "M-n" 'org-next-item
+          "M-p" 'org-previous-item
+          "M-n" 'org-next-item
+          "M-p" 'org-previous-item
+          "b" 'org-toggle-checkbox))
   :config
+  (put 'org-toggle-checkbox 'repeat-map 'org-repeat-map)
+  (put 'org-previous-item 'repeat-map 'org-repeat-map)
+  (put 'org-next-item 'repeat-map 'org-repeat-map)
   (setq org-tags-column 80)
   (setq org-default-notes-file (file-name-concat user-emacs-directory "org" "notes.org"))
   (setq org-directory (file-name-concat user-emacs-directory "org"))
@@ -409,8 +448,7 @@
   (defun toggle-eshell-window (arg)
     (interactive "P")
     (let ((buf (current-buffer)))
-      (if (and
-           (string= (buffer-name buf) "*eshell*"))
+      (if (string= (buffer-name buf) "*eshell*")
           (when (window-parameter nil 'window-side)
             (delete-window))
         (let ((dir default-directory))
@@ -428,7 +466,8 @@
   (eshell-mode . (lambda ()
                    (eat-eshell-mode)))
   :bind
-  ("M-E" . 'toggle-eshell-window))
+  ("M-E" . 'toggle-eshell-window)
+  ("C-x 1" . 'only-window-side-window))
 
 (use-package python
   :ensure nil
@@ -510,6 +549,7 @@
   :config
   (load-theme 'gruber-darker :no-confirm))
 
+(use-package wgsl-mode)
 
 (use-package protobuf-mode
   :preface
@@ -517,7 +557,7 @@
     (interactive "P")
     (let ((current-max 0))
       (save-excursion
-        (beginning-of-buffer)
+        (goto-char (point-min))
         (while (search-forward-regexp (rx "=" (* space) (group (+ digit)) (* space) ";") nil t)
           (setq current-max (max (string-to-number (match-string 1)) current-max))))
       (if arg
