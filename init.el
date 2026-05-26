@@ -119,6 +119,10 @@
         ispell-extra-args '("--sug-mode=ultra"))
   (add-hook 'window-selection-change-functions 'flash-window)
 
+  (setq kill-region-dwim 'emacs-word)
+
+  (setq treesit-auto-install-grammar t)
+
   (setq display-buffer-alist
         `((,(rx "*compilation*")
            (display-buffer-reuse-window display-buffer-in-side-window)
