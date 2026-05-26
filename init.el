@@ -174,13 +174,6 @@
   :mode ((rx (or ".morpheme" ".js") eos) . javascript-mode))
 
 (use-package vc
-  :preface
-  (defun log-view-diff-save-excursion ()
-    (interactive)
-    (save-excursion)
-    (let ((cur-win (selected-window)))
-      (call-interactively #'log-view-diff)
-      (select-window cur-win)))
   :config
   (setq vc-git-diff-switches '("-U7"))
   (setq vc-git-log-switches '("--decorate" "--graph" "--format=medium"))
@@ -430,7 +423,9 @@
 
 (use-package eat
   :config
-  (setq eat-term-scrollback-size (* 1024 1024)))
+  (setq eat-term-scrollback-size (* 1024 1024))
+  :init
+  (define-key eat-eshell-semi-char-mode-map (kbd "M-E") nil))
 
 (use-package eshell
   :demand t
