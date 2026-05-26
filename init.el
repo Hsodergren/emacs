@@ -355,16 +355,21 @@
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
-(use-package eglot :ensure nil
+
+(use-package eglot
+  :ensure nil
   :config
-  (setq-default eglot-workspace-configuration '(:gopls (:hints
-                (:assignVariableTypes t
-                 :compositeLiteralFields t
-                 :compositeLiteralTypes t
-                 :functionTypeParameters t
-                 :parameterNames t
-                 :rangeVariableTypes t)
-                :usePlaceholders t)))
+  (setq-default eglot-workspace-configuration
+                '(:gopls (:hints (:assignVariableTypes t
+                                  :compositeLiteralFields t
+                                  :compositeLiteralTypes t
+                                  :functionTypeParameters t
+                                  :parameterNames t
+                                  :rangeVariableTypes t
+                                  )
+                                 :usePlaceholders t)
+                         :rust-analyzer (:cargo
+                                         (:targetDir t))))
   (setq eglot-stay-out-of '(imenu))
   (setq eglot-code-action-indications nil)
   :hook
@@ -490,6 +495,29 @@
   (go-mode . eglot-ensure))
 
 (use-package rust-mode
+  :preface
+  (defun my/rust-analyzer-expand-macro ()
+    "Expand macro at point using rust-analyzer."
+    (interactive)
+    (unless (eglot-managed-p)
+      (error "Eglot is not managing this buffer"))
+
+    (let* ((server (eglot-current-server))
+           (params (eglot--TextDocumentPositionParams))
+           (response
+            (jsonrpc-request
+             server
+             "rust-analyzer/expandMacro"
+             params)))
+      (if-let ((expansion (plist-get response :expansion)))
+          (with-current-buffer (get-buffer-create "*rust-analyzer macro expansion*")
+            (erase-buffer)
+            (insert (format  "// Expansion of %s\n\n" (plist-get response :name)))
+            (insert expansion)
+            (rust-mode)
+            (display-buffer (current-buffer)))
+        (message "No expansion available"))))
+
   :defer t
   :init
   (with-eval-after-load 'compile
@@ -500,7 +528,8 @@
   :hook
   (rust-mode . eglot-ensure)
   :bind
-  ("C-c C-b" . #'rust-insert-backtrace-dbg))
+  ("C-c C-b" . #'rust-insert-backtrace-dbg)
+  ("C-c C-e" . #'my/rust-analyzer-expand-macro))
 
 (use-package typescript-mode)
 
