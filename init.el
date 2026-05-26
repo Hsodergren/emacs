@@ -255,12 +255,22 @@
 
 (use-package rainbow-mode)
 
-(use-package sideline-flymake)
+(use-package flymake
+  :bind
+  (:repeat-map flymake-nav-repeat-map
+               ("n" . 'flymake-goto-next-error)
+               ("p" . 'flymake-goto-prev-error))
+  :bind
+  ("C-c n" . 'flymake-goto-next-error)
+  ("C-c p" . 'flymake-goto-prev-error))
+
 (use-package sideline
-  :config
+  :init
   (setq sideline-backends-right '(sideline-flymake))
   :hook
   (flymake-mode . sideline-mode))
+
+(use-package sideline-flymake)
 
 (use-package zoom-window
   :bind
