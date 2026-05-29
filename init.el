@@ -67,7 +67,7 @@
 
   :init
   (load-work-file)
-  (setq my-global-path-paths (list "~/bin" "~/.local/bin"))
+  (setq my-global-path-paths (list "~/bin" "~/.local/bin" "/usr/local/bin"))
 
   (when (eq system-type 'darwin)
     (setq my-global-path-paths
@@ -177,10 +177,11 @@
   :config
   (setq vc-git-diff-switches '("-U7"))
   (setq vc-git-log-switches '("--decorate" "--graph" "--format=medium"))
-  (setq vc-dir-allow-mass-mark-changes t))
+  (setq vc-dir-allow-mass-mark-changes t)
+  (setq vc-dir-auto-hide-up-to-date t))
 
-;; :bind (:map vc-git-log-view-mode-map
-;;             ("o" . #'log-view-diff-save-excursion)))
+(use-package yaml-ts-mode
+  :mode ((rx (or ".yaml" ".yml") eos)))
 
 (use-package json-mode
   :ensure t)
@@ -256,30 +257,33 @@
 (use-package rainbow-mode)
 
 (use-package flymake
+  :preface
+  (defun toggle-flymake-inline-diagnostics ()
+    (interactive)
+    (if (null flymake-show-diagnostics-at-end-of-line)
+        (setq flymake-show-diagnostics-at-end-of-line 'short)
+      (setq flymake-show-diagnostics-at-end-of-line nil))
+    (revert-buffer nil t))
+  :config
+  (setq flymake-show-diagnostics-at-end-of-line 'short)
   :bind
   (:repeat-map flymake-nav-repeat-map
                ("n" . 'flymake-goto-next-error)
                ("p" . 'flymake-goto-prev-error))
   :bind
   ("C-c n" . 'flymake-goto-next-error)
-  ("C-c p" . 'flymake-goto-prev-error))
+  ("C-c p" . 'flymake-goto-prev-error)
+  ("C-c C-a" . 'toggle-flymake-inline-diagnostics))
 
 (use-package sideline
   :init
-  (setq sideline-backends-right '(sideline-flymake))
-  :hook
-  (flymake-mode . sideline-mode))
+  (setq sideline-backends-right '(sideline-flymake)))
 
 (use-package sideline-flymake)
 
 (use-package zoom-window
   :bind
   ("M-z" . zoom-window-zoom))
-
-(use-package yasnippet
-  :init
-  (yas-global-mode)
-  (setq yas-snippet-dirs (file-name-concat user-emacs-directory "snippets")))
 
 (use-package markdown-mode
   :ensure t
@@ -354,7 +358,6 @@
   :config
   (global-eldoc-mode)
   (eldoc-schedule-timer))
-
 
 (use-package eglot
   :ensure nil
@@ -494,7 +497,10 @@
   :hook
   (go-mode . eglot-ensure))
 
-(use-package rust-mode
+(use-package rust-mode)
+
+(use-package rust-ts-mode
+  :mode ((rx ".rs" eos))
   :preface
   (defun my/rust-analyzer-expand-macro ()
     "Expand macro at point using rust-analyzer."
@@ -509,10 +515,11 @@
              server
              "rust-analyzer/expandMacro"
              params)))
-      (if-let ((expansion (plist-get response :expansion)))
+      (if-let ((expansion (plist-get response :expansion))
+               (name (plist-get response :name)))
           (with-current-buffer (get-buffer-create "*rust-analyzer macro expansion*")
             (erase-buffer)
-            (insert (format  "// Expansion of %s\n\n" (plist-get response :name)))
+            (insert (format  "// Expansion of %s\n\n" name))
             (insert expansion)
             (rust-mode)
             (display-buffer (current-buffer)))
@@ -522,14 +529,25 @@
   :init
   (with-eval-after-load 'compile
     (require 'rust-compile))
+
   (defun rust-insert-backtrace-dbg ()
     (interactive)
     (insert "dbg!(&std::backtrace::Backtrace::force_capture());"))
+
+  (defun rust-project-fmt ()
+    (interactive)
+    (let* ((default-directory (project-root (project-current)))
+           (process (start-process "cargofmt" nil "cargo" "fmt")))
+      (set-process-sentinel process (lambda (proc event)
+                                      (when (and (string-match (rx (or "finished" "exited")) event)
+                                                 (/= (process-exit-status proc) 0))
+                                        (error "cargo fmt failed"))))))
   :hook
-  (rust-mode . eglot-ensure)
+  (rust-ts-mode . eglot-ensure)
   :bind
   ("C-c C-b" . #'rust-insert-backtrace-dbg)
-  ("C-c C-e" . #'my/rust-analyzer-expand-macro))
+  ("C-c C-e" . #'my/rust-analyzer-expand-macro)
+  ("C-c C-f" . #'rust-project-fmt))
 
 (use-package typescript-mode)
 
