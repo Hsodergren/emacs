@@ -390,6 +390,9 @@
    ("t" . 'eglot-find-typeDefinition)
    ("c" . 'recompile)))
 
+(use-package project
+  :bind (:map project-prefix-map ("c" . 'my/project-compile)))
+
 (use-package org
   :ensure nil
   :init
@@ -627,3 +630,39 @@
 (when (file-exists-p "~/.emacs.d/opam-user-setup.el")
   (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el"))
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
+
+(defvar my/project-compile-options nil)
+
+(defun my/project-compile ()
+  (interactive)
+  (if-let* ((project (project-current))
+            (name (project-name project))
+            (options (alist-get name my/project-compile-options nil nil #'string=))
+            (default-directory (project-root project)))
+      (progn
+        (message "%s" options)
+        (let* ((candidates (if (functionp options)
+                              (funcall options)
+                            options))
+              (final (mapcar (lambda (cand)
+                               (cond*
+                                ((stringp cand) cand)
+                                ((plistp cand)
+                                 (let* ((env (string-join
+                                              (mapcar (lambda (env)
+                                                        (format "%s=%s" (car env) (cdr env)))
+                                                      (plist-get cand :env))
+                                              " "))
+                                        (prefix (plist-get cand :prefix))
+                                        (suffix (plist-get cand :suffix))
+                                        (text (plist-get cand :text)))
+                                   (string-join (seq-filter (lambda (str) (not (string-empty-p str)))
+                                                            (list (propertize env 'face 'shadow)
+                                                                  (propertize prefix 'face 'shadow)
+                                                                  text
+                                                                  (propertize suffix 'face 'shadow)))
+                                                " ")))))
+                             candidates)))
+
+          (compile (completing-read "Compile project: " final))))
+    (call-interactively 'project-compile)))
