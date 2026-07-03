@@ -1,4 +1,5 @@
 ;; -*- lexical-binding: t; -*-
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
 (use-package use-package
@@ -66,9 +67,8 @@
     (insert "TODO: "))
 
   :init
-  (load-work-file)
   (setq my-global-path-paths (list "~/bin" "~/.local/bin" "/usr/local/bin"))
-
+  (load-work-file)
   (when (eq system-type 'darwin)
     (setq my-global-path-paths
           (append my-global-path-paths work-paths))
@@ -97,14 +97,14 @@
   (setq ring-bell-function 'ignore)
   (dolist (path my-global-path-paths)
     (add-to-path (expand-file-name path)))
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
   :config
   (scroll-bar-mode -1)
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (setq inhibit-startup-screen t)
-  (setq blink-cursor-mode nil)
+  (blink-cursor-mode -1)
+  (electric-pair-mode)
   (setq split-width-threshold 200)
   (setq split-height-threshold nil)
   (setq eldoc-print-after-edit t)
@@ -117,6 +117,14 @@
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra"))
+  (setq delete-pair-blink-delay 0)
+  (setq treesit-font-lock-level 4)
+  (setq major-mode-remap-alist
+        '((python-mode . python-ts-mode)
+          (typescript-mode . typescript-ts-mode)
+          (rust-mode . rust-ts-mode)
+          (yaml-mode . yaml-ts-mode)
+          (json-mode . json-ts-mode)))
   (add-hook 'window-selection-change-functions 'flash-window)
 
   (setq kill-region-dwim 'emacs-word)
@@ -149,42 +157,74 @@
   (global-set-key (kbd "C-c s v")
                   (lambda () (interactive) (load-file (file-name-concat user-emacs-directory "init.el"))))
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-  (add-hook `prog-mode-hook 'show-paren-mode)
+  (add-hook 'prog-mode-hook 'show-paren-mode)
   (setq comment-auto-fill-only-comments t)
   (add-hook 'prog-mode-hook (lambda ()
                               (font-lock-add-keywords
                                nil
                                '(("\\<\\(TODO\\|FIXME\\|HACK\\|NOTE\\|BUG\\):?" 1 font-lock-warning-face t)))))
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
-  (add-hook 'after-init-hook 'load-work-file)
   :bind
-  ("M-o" . 'other-window)
-  ("C-x C-b" . 'ibuffer)
-  ("C-v" . 'scroll-up-half)
-  ("M-v" . 'scroll-down-half)
-  ("M-g i" . 'consult-imenu)
-  ("C-M-;" . 'my/add-todo-comment)
-  ("M-/" . 'dabbrev-expand))
+  ("M-o" . other-window)
+  ("C-c d" . delete-pair)
+  ("C-c C-d" . raise-sexp)
+  ("C-x C-b" . ibuffer)
+  ("C-v" . scroll-up-half)
+  ("M-v" . scroll-down-half)
+  ("C-M-;" . my/add-todo-comment)
+  ("M-/" . dabbrev-expand))
 
 (use-package repeat
   :init
   (repeat-mode))
 
 (use-package js
-  :mode ((rx (or ".morpheme" ".js") eos) . javascript-mode))
+  :mode ((rx (or ".morpheme" ".js") eos) . javascript-mode)
+  :hook
+  (javascript-mode . (lambda ()
+                       (setq js-indent-level (guess-indent-level)))))
 
 (use-package vc
-  :config
+  :ensure nil
+  :init
   (setq vc-git-diff-switches '("-U7"))
   (setq vc-git-log-switches '("--decorate" "--graph" "--format=medium"))
   (setq vc-dir-allow-mass-mark-changes t)
   (setq vc-dir-auto-hide-up-to-date t))
 
+(use-package which-key
+  :init
+  (setq which-key-idle-delay 2)
+  (which-key-mode))
+
+(use-package smerge-mode
+  :init
+  (setq smerge-command-prefix (kbd "C-c C-s"))
+  :bind (:map smerge-basic-map
+         ("N" . smerge-vc-next-conflict)
+         :repeat-map smerge-repeat-map
+         ("N" . smerge-vc-next-conflict)
+         ("P" . smerge-prev)))
+
 (use-package yaml-ts-mode
   :mode ((rx (or ".yaml" ".yml") eos)))
 
-(use-package json-mode
-  :ensure t)
+(defun my/json-ts-mode-hook-fn ()
+  (setq treesit-font-lock-settings
+        (treesit-replace-font-lock-feature-settings (treesit-font-lock-rules
+                                                     :language 'json
+                                                     :feature 'pair
+                                                     :override t
+                                                     '((pair key: (_) @font-lock-keyword-face)))
+                                                    treesit-font-lock-settings))
+  (treesit-font-lock-recompute-features))
+
+(use-package json-ts-mode
+  :ensure nil
+  :hook
+  (json-ts-mode . my/json-ts-mode-hook-fn)
+  (json-ts-mode . (lambda ()
+                    (setq-local json-ts-mode-indent-offset (guess-indent-level)))))
 
 (use-package diff-mode
   :config
@@ -192,14 +232,14 @@
 
 (use-package compile
   :ensure nil
-  :config
+  :init
   (setq compilation-scroll-output 'first-error)
   (setq compilation-always-kill t)
   (setq compilation-environment nil)
 
   (defun my-colorize-compilation-buffer ()
     (ansi-color-apply-on-region compilation-filter-start (point)))
-
+  :config
   (add-hook 'compilation-filter-hook #'my-colorize-compilation-buffer)
   (add-to-list 'compilation-error-regexp-alist-alist
                '(rust-panic
@@ -215,7 +255,8 @@
   (add-to-list 'compilation-error-regexp-alist 'rust-insta-snapshot))
 
 (use-package xref
-  :config
+  :ensure nil
+  :init
   (advice-add 'xref-pulse-momentarily
               :override
               (lambda ()
@@ -229,14 +270,6 @@
                                     (cons (line-beginning-position) (1+ (point)))
                                   (cons (point) (line-end-position)))))))
                   (pulse-momentary-highlight-region beg end 'pulse-highlight-face)))))
-
-(use-package paredit
-  :ensure t
-  :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode)
-  :bind (:map lisp-mode-map       ("<return>" . paredit-newline))
-  :bind (:map emacs-lisp-mode-map ("<return>" . paredit-newline)))
-
-(use-package yaml-mode)
 
 (use-package disable-mouse)
 
@@ -257,6 +290,7 @@
 (use-package rainbow-mode)
 
 (use-package flymake
+  :ensure nil
   :preface
   (defun toggle-flymake-inline-diagnostics ()
     (interactive)
@@ -268,12 +302,12 @@
   (setq flymake-show-diagnostics-at-end-of-line 'short)
   :bind
   (:repeat-map flymake-nav-repeat-map
-               ("n" . 'flymake-goto-next-error)
-               ("p" . 'flymake-goto-prev-error))
+               ("n" . flymake-goto-next-error)
+               ("p" . flymake-goto-prev-error))
   :bind
-  ("C-c n" . 'flymake-goto-next-error)
-  ("C-c p" . 'flymake-goto-prev-error)
-  ("C-c C-a" . 'toggle-flymake-inline-diagnostics))
+  ("C-c n" . flymake-goto-next-error)
+  ("C-c p" . flymake-goto-prev-error)
+  ("C-c C-a" . toggle-flymake-inline-diagnostics))
 
 (use-package sideline
   :init
@@ -287,13 +321,13 @@
 
 (use-package markdown-mode
   :ensure t
-  :init
-  (auto-fill-mode))
+  :hook
+  (markdown-mode . auto-fill-mode))
 
 (use-package expand-region
   :ensure t
   :bind
-  ("C-=" . #'er/expand-region))
+  ("C-=" . er/expand-region))
 
 (use-package vertico
   :init
@@ -314,7 +348,7 @@
 (use-package embark
   :ensure t
   :bind
-  ("C-." . #'embark-act))
+  ("C-." . embark-act))
 
 (use-package consult
   :custom
@@ -341,12 +375,11 @@
 
 (use-package magit
   :config
-  (use-package with-editor)
   (setq magit-push-always-verify nil)
   (setq git-commit-summary-max-length 50)
   (setq magit-diff-refine-hunk t)
   :bind
-  ("C-x g" . #'magit-status))
+  ("C-x g" . magit-status))
 
 (use-package git-timemachine)
 
@@ -355,13 +388,68 @@
   (global-diff-hl-mode 1))
 
 (use-package eldoc
+  :ensure nil
   :config
   (global-eldoc-mode)
   (eldoc-schedule-timer))
 
+
+(defun imenu-get-pos (item)
+  (car (get-text-property 0 'imenu-region item)))
+
+(defun imenu-item-line (item)
+  (if-let* ((pos (imenu-get-pos item))
+            (kind (get-text-property 0 'imenu-kind item)))
+      (save-excursion
+        (goto-char pos)
+
+        (let ((i 0))
+          (while (and (not (string-search item (thing-at-point 'line)))
+                      (< i 5))
+            (forward-line)
+            (unless (string-match (rx line-start (* whitespace) (literal (string-trim comment-start))) (thing-at-point 'line))
+              (setq i (1+ i))))
+          (when (>= i 5)
+            (goto-char pos)))
+        (let* ((ret (concat (string-pad (propertize kind 'face 'shadow) 8) " " (string-trim (thing-at-point 'line)))))
+          (add-text-properties 0 1 (text-properties-at 0 item) ret)
+          ret))
+    item))
+
+(defun filter-imenu-items (items)
+  (seq-keep
+   (lambda (v)
+     (if (seq-contains-p my/eglot-imenu-should-exclude (get-text-property 0 'imenu-kind (car v)))
+         nil
+       (cond
+        ((proper-list-p v)
+         (let ((values (filter-imenu-items (cdr v)))
+               (line-text (imenu-item-line (car v))))
+           (if values
+               (cons line-text values)
+             (if-let* ((pos (imenu-get-pos (car v))))
+                 (cons line-text pos)
+               nil))))
+        ((consp v)
+         (cons (imenu-item-line (car v)) (cdr v))))))
+   items))
+
+(ert-deftest test-filter-eglot-imenu ()
+  (should (equal (filter-imenu-items '(("foo" . 1) ("bar" . 2) ("baz". 3))) '(("foo" . 1) ("bar" . 2) ("baz". 3))))
+  (should (equal (filter-imenu-items `(("foo" . 1) ("bar" . 2) (,(propertize "baz" 'imenu-kind "Constant"). 3))) '(("foo" . 1) ("bar" . 2))))
+  (should (equal (filter-imenu-items '(("foo" ("bar" ("baz". 2) ("foobar" . 3))))) '(("foo" ("bar" ("baz". 2) ("foobar" . 3))))))
+  (should (equal (filter-imenu-items `(("foo" ("bar" (,(propertize "baz" 'imenu-kind "Constant"). 2) ("foobar" . 3))))) '(("foo" ("bar" ("foobar" . 3))))))
+  (should (equal (filter-imenu-items `((,(propertize "foo" 'imenu-region '(1 . 2)) ("bar" (,(propertize "baz" 'imenu-kind "Constant"). 2) (,(propertize "baz" 'imenu-kind "Constant"). 2))))) `(("foo" . 1)))))
+
 (use-package eglot
   :ensure nil
-  :config
+  :preface
+  (defvar my/eglot-imenu-should-exclude '("Constant" "Property" "Variable" "Field"))
+
+  (defun my/eglot-imenu (fn)
+    (filter-imenu-items (funcall fn)))
+
+  :init
   (setq-default eglot-workspace-configuration
                 '(:gopls (:hints (:assignVariableTypes t
                                   :compositeLiteralFields t
@@ -371,10 +459,11 @@
                                   :rangeVariableTypes t
                                   )
                                  :usePlaceholders t)
-                         :rust-analyzer (:cargo
-                                         (:targetDir t))))
-  (setq eglot-stay-out-of '(imenu))
+                  :rust-analyzer (:cargo
+                                  (:targetDir t))))
+  (setq eglot-stay-out-of nil)
   (setq eglot-code-action-indications nil)
+  (advice-add 'eglot-imenu :around 'my/eglot-imenu)
   :hook
   (eglot-managed-mode . (lambda ()
                           (eglot-semantic-tokens-mode -1)))
@@ -382,16 +471,17 @@
   (:prefix-map
    eglot-prefix
    :prefix "C-,"
-   ("a a" . 'eglot-code-actions)
-   ("a i" . 'eglot-code-action-organize-imports)
-   ("a q" . 'eglot-code-action-quickfix)
-   ("f" . 'eglot-format-buffer)
-   ("r" . 'eglot-rename)
-   ("t" . 'eglot-find-typeDefinition)
-   ("c" . 'recompile)))
+   ("a a" . eglot-code-actions)
+   ("a i" . eglot-code-action-organize-imports)
+   ("a q" . eglot-code-action-quickfix)
+   ("f" . eglot-format-buffer)
+   ("r" . eglot-rename)
+   ("t" . eglot-find-typeDefinition)
+   ("c" . recompile)))
 
 (use-package project
-  :bind (:map project-prefix-map ("c" . 'my/project-compile)))
+  :ensure nil
+  :bind (:map project-prefix-map ("c" . my/project-compile)))
 
 (use-package org
   :ensure nil
@@ -400,13 +490,18 @@
         (define-keymap
           "M-n" 'org-next-item
           "M-p" 'org-previous-item
-          "M-n" 'org-next-item
-          "M-p" 'org-previous-item
+          "n" 'org-next-item
+          "p" 'org-previous-item
           "b" 'org-toggle-checkbox))
+  (setq org-todo-toggle-repeat-map
+        (define-keymap
+          "t" 'org-todo
+          "C-t" 'org-todo))
   :config
   (put 'org-toggle-checkbox 'repeat-map 'org-repeat-map)
   (put 'org-previous-item 'repeat-map 'org-repeat-map)
   (put 'org-next-item 'repeat-map 'org-repeat-map)
+  (put 'org-todo 'repeat-map 'org-todo-toggle-repeat-map)
   (setq org-tags-column 80)
   (setq org-default-notes-file (file-name-concat user-emacs-directory "org" "notes.org"))
   (setq org-directory (file-name-concat user-emacs-directory "org"))
@@ -427,9 +522,9 @@
            "* %? \n%^{From:}t--%^{To:}t")))
   (setq calendar-week-start-day 1)
   :bind
-  (("C-c a" . 'org-agenda)
-   ("C-c c" . 'org-capture)
-   ("C-c l" . 'org-store-link))
+  (("C-c a" . org-agenda)
+   ("C-c c" . org-capture)
+   ("C-c l" . org-store-link))
   :hook
   (org-mode . auto-fill-mode))
 
@@ -445,10 +540,10 @@
 (use-package eat
   :config
   (setq eat-term-scrollback-size (* 1024 1024))
-  :init
   (define-key eat-eshell-semi-char-mode-map (kbd "M-E") nil))
 
 (use-package eshell
+  :ensure nil
   :demand t
   :preface
   (defun myeshell/find-exact-match (full-path match-p)
@@ -483,27 +578,21 @@
   (setq eshell-visual-commands nil)
 
   :hook
-  (eshell-mode . (lambda ()
-                   (eat-eshell-mode)))
+  (eshell-mode . eat-eshell-mode)
   :bind
-  ("M-E" . 'toggle-eshell-window)
-  ("C-x 1" . 'only-window-side-window))
+  ("M-E" . toggle-eshell-window)
+  ("C-x 1" . only-window-side-window))
 
 (use-package python
   :ensure nil
-  :init
   :hook
   (python-mode . eglot-ensure))
 
 (use-package go-mode
-  :init
   :hook
   (go-mode . eglot-ensure))
 
-(use-package rust-mode)
-
 (use-package rust-ts-mode
-  :mode ((rx ".rs" eos))
   :preface
   (defun my/rust-analyzer-expand-macro ()
     "Expand macro at point using rust-analyzer."
@@ -548,11 +637,24 @@
   :hook
   (rust-ts-mode . eglot-ensure)
   :bind
-  ("C-c C-b" . #'rust-insert-backtrace-dbg)
-  ("C-c C-e" . #'my/rust-analyzer-expand-macro)
-  ("C-c C-f" . #'rust-project-fmt))
+  ("C-c C-b" . rust-insert-backtrace-dbg)
+  ("C-c C-e" . my/rust-analyzer-expand-macro)
+  ("C-c C-f" . rust-project-fmt))
 
-(use-package typescript-mode)
+(defun guess-indent-level ()
+  (let ((indent-level 4))
+    (save-excursion
+      (goto-char (point-min))
+      (when (search-forward-regexp (rx bol (group (+ whitespace))) nil t)
+        (setq indent-level (length (match-string 1))))
+      indent-level)))
+
+(use-package typescript-ts-mode
+  :ensure nil
+  :hook
+  (typescript-ts-mode . eglot-ensure)
+  (typescript-ts-mode . (lambda ()
+                          (setq-local typescript-ts-indent-offset (guess-indent-level)))))
 
 
 (use-package ocamlformat
@@ -560,9 +662,6 @@
   :hook (before-save . ocamlformat-before-save))
 
 (use-package tuareg
-  :init
-  (add-hook 'tuareg-mode (lambda () (progn
-                                      (add-hook 'before-save-hook 'ocp-indent-buffer nil 'local))))
   :hook
   (tuareg-mode . eglot-ensure)
   (tuareg-mode . ocaml-eglot))
@@ -633,36 +732,100 @@
 
 (defvar my/project-compile-options nil)
 
+(defun my/candidate-to-command (cand)
+  (cond*
+   ((stringp cand) cand)
+   ((plistp cand)
+    (let ((env (string-join
+                (mapcar (lambda (env)
+                          (format "%s=%s" (car env) (cdr env)))
+                        (plist-get cand :env))
+                " "))
+          (prefix (or (plist-get cand :prefix) ""))
+          (suffix (or (plist-get cand :suffix) ""))
+          (cmd (plist-get cand :cmd))
+          (cmds (plist-get cand :cmds))
+          (cmds-separator (or (plist-get cand :cmds-separator) "&&")))
+      (cond
+       (cmd (string-join (seq-filter (lambda (str) (not (string-empty-p str)))
+                                     (list (propertize env 'face 'shadow)
+                                           (propertize prefix 'face 'shadow)
+                                           cmd
+                                           (propertize suffix 'face 'shadow)))
+                         " "))
+       (cmds
+        (string-join (mapcar 'my/candidate-to-command cmds) (format " %s " cmds-separator)))
+       (t (error "cmd or cmds needs to be given in a plist")))))))
+
+(ert-deftest test-candidate-to-command ()
+  (should (equal (my/candidate-to-command "asd") "asd"))
+  (should (equal (my/candidate-to-command '(:cmd  "asd")) "asd"))
+  (should (equal (my/candidate-to-command '(:env (("foo" . "bar")) :cmd "baz")) "foo=bar baz"))
+  (should (equal (my/candidate-to-command '(:env (("foo" . "bar")) :cmd "baz" :prefix "foobar" :suffix "barbaz"))
+                 "foo=bar foobar baz barbaz"))
+  (should (equal (my/candidate-to-command '(:cmds ("foo" (:cmd "bar" :env (("foo" . "bar")))))) "foo && foo=bar bar")))
+
 (defun my/project-compile ()
   (interactive)
   (if-let* ((project (project-current))
             (name (project-name project))
-            (options (alist-get name my/project-compile-options nil nil #'string=))
+            (options (alist-get name my/project-compile-options nil nil #'string-match))
             (default-directory (project-root project)))
-      (progn
-        (message "%s" options)
-        (let* ((candidates (if (functionp options)
-                              (funcall options)
-                            options))
-              (final (mapcar (lambda (cand)
-                               (cond*
-                                ((stringp cand) cand)
-                                ((plistp cand)
-                                 (let* ((env (string-join
-                                              (mapcar (lambda (env)
-                                                        (format "%s=%s" (car env) (cdr env)))
-                                                      (plist-get cand :env))
-                                              " "))
-                                        (prefix (plist-get cand :prefix))
-                                        (suffix (plist-get cand :suffix))
-                                        (text (plist-get cand :text)))
-                                   (string-join (seq-filter (lambda (str) (not (string-empty-p str)))
-                                                            (list (propertize env 'face 'shadow)
-                                                                  (propertize prefix 'face 'shadow)
-                                                                  text
-                                                                  (propertize suffix 'face 'shadow)))
-                                                " ")))))
-                             candidates)))
-
-          (compile (completing-read "Compile project: " final))))
+      (let* ((candidates (if (functionp options)
+                             (funcall options)
+                           options))
+             (final (mapcar #'my/candidate-to-command candidates))
+             (command (completing-read "Compile project: " final)))
+        (compile command))
     (call-interactively 'project-compile)))
+
+
+(defvar my/stored-frame-size `(:width ,(frame-pixel-width)
+                               :height ,(frame-pixel-height)
+                               :x ,(car  (frame-position))
+                               :y ,(cdr (frame-position))))
+(defvar my/current-frame-resize-mode 'custom)
+(defun my/update-frame-size (&rest args)
+  (let* ((current-width (frame-pixel-width))
+         (current-height (frame-pixel-height))
+         (current-pos (frame-position))
+         (current-x (car current-pos))
+         (current-y (cdr current-pos)))
+    (unless (and (= current-width (plist-get my/stored-frame-size :width))
+                 (= current-height (plist-get my/stored-frame-size :height))
+                 (= current-x (plist-get my/stored-frame-size :x))
+                 (= current-y (plist-get my/stored-frame-size :y)))
+      (setq my/current-frame-resize-mode 'custom
+            my/stored-frame-size `(:width ,current-width :height ,current-height :x ,current-x :y ,current-y)))))
+
+(defun my/set-custom-frame-mode (&rest args)
+  (setq my/current-frame-resize-mode 'custom))
+
+(add-hook 'window-size-change-functions #'my/set-custom-frame-mode)
+(add-hook 'move-frame-functions #'my/set-custom-frame-mode)
+
+(defun my/toggle-frame-position ()
+  (interactive)
+  (let* ((monitor (frame-monitor-workarea))
+         (zero-width (car monitor))
+         (zero-height (cadr monitor))
+         (display-width (caddr monitor))
+         (display-height (cadddr monitor)))
+    (cond
+     ((eq my/current-frame-resize-mode 'custom)
+      (message "setting right")
+      (my/update-frame-size)
+      (setq my/current-frame-resize-mode 'right)
+      (set-frame-size nil (/ display-width 2) display-height t)
+      (set-frame-position nil (/ display-width 2) zero-height))
+     ((eq my/current-frame-resize-mode 'right)
+      (message "setting left")
+      (setq my/current-frame-resize-mode 'left)
+      (set-frame-size nil (/ display-width 2) display-height t)
+      (set-frame-position nil zero-width zero-height))
+     ((eq my/current-frame-resize-mode 'left)
+      (message "setting custom")
+      (setq my/current-frame-resize-mode 'custom)
+      (set-frame-size nil (plist-get my/stored-frame-size :width) (plist-get my/stored-frame-size :height) t)
+      (set-frame-position nil (plist-get my/stored-frame-size :x) (plist-get my/stored-frame-size :y)))
+     (t (message "nope")))))
